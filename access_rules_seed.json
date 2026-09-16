@@ -1,0 +1,102 @@
+[
+  {
+    "from": "Penn Station",
+    "to": "West Side Yard",
+    "minutes": 20,
+    "kind": "legal_deadhead_access",
+    "direction": "to_report_location",
+    "confidence": "explicit",
+    "source": "Crew Book p.256",
+    "rule": "For a train crew deadheading to West Side Yard, apply 20 minutes walking time from arrival of the deadhead train in Penn Station."
+  },
+  {
+    "from": "Babylon Station",
+    "to": "Babylon Yard",
+    "minutes": 35,
+    "kind": "legal_deadhead_access",
+    "direction": "to_report_location",
+    "confidence": "explicit",
+    "source": "Crew Book p.255",
+    "rule": "For a train crew deadheading to Babylon Yard, apply 35 minutes walking time from arrival of the deadhead train in Babylon Station."
+  },
+  {
+    "from": "Hillside Yardmaster office",
+    "to": "Hillside platform",
+    "minutes": 10,
+    "kind": "access_or_release",
+    "direction": "verify",
+    "confidence": "source_explicit_but_context_needs_review",
+    "source": "Crew Book p.255",
+    "rule": "10 minutes from Yardmaster\u2019s office to platform; Yardmaster must verify release from office."
+  },
+  {
+    "from": "Ronkonkoma Station Welfare Facility official board",
+    "to": "Ronkonkoma station",
+    "minutes": 15,
+    "kind": "walking_access",
+    "direction": "both",
+    "confidence": "explicit",
+    "source": "Crew Book p.256",
+    "rule": "15 minutes walking to/from Station Welfare Facility official board."
+  },
+  {
+    "from": "Ronkonkoma Certified Siding",
+    "to": "Ronkonkoma station",
+    "minutes": 15,
+    "kind": "walking_access",
+    "direction": "both",
+    "confidence": "explicit",
+    "source": "Crew Book p.256",
+    "rule": "15 minutes walking to/from certified siding to station."
+  },
+  {
+    "from": "Shea Yard / Mets-Willets Point track 3 or 4",
+    "to": "main track",
+    "minutes": 5,
+    "kind": "walking_access",
+    "direction": "verify",
+    "confidence": "explicit",
+    "source": "Crew Book p.256",
+    "rule": "5 minutes to walk from track 3 or 4 to main track."
+  },
+  {
+    "from": "Grand Central Madison station",
+    "to": "Penn Station",
+    "minutes": 45,
+    "kind": "cross_terminal_access",
+    "direction": "from_release_location",
+    "confidence": "explicit",
+    "source": "Crew Book p.257",
+    "rule": "45 minutes leave train in station and walk to Penn Station."
+  },
+  {
+    "from": "Grand Central Madison station",
+    "to": "West Side Yard",
+    "minutes": 55,
+    "kind": "cross_terminal_access",
+    "direction": "from_release_location",
+    "confidence": "explicit",
+    "source": "Crew Book p.257",
+    "rule": "55 minutes leave train in station and walk to West Side Yard."
+  },
+  {
+    "from": "Midday Storage Yard",
+    "to": "Jamaica or Grand Central Madison",
+    "minutes": 55,
+    "kind": "subway_deadhead",
+    "direction": "both_or_verify",
+    "confidence": "explicit",
+    "source": "Crew Book p.257",
+    "rule": "55 minutes subway deadhead time from Midday Storage Yard to Jamaica and Grand Central Madison."
+  },
+  {
+    "from": "Woodside station",
+    "to": "Midday Yard Trainman\u2019s room",
+    "minutes": 55,
+    "kind": "walking_access",
+    "direction": "both",
+    "confidence": "explicit",
+    "source": "Crew Book p.257",
+    "rule": "55 minutes walking time between Woodside station and Trainman\u2019s room in Midday Yard."
+  }
+]

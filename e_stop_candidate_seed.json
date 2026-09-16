@@ -1,0 +1,62 @@
+[
+  {
+    "train": "13",
+    "crew": 7,
+    "confidence": "strong",
+    "pattern": "crew_book_extends_beyond_public_terminal",
+    "crew_book": "Montauk 11:30 AM \u2192 Long Island City 2:56 PM",
+    "public_gtfs": "Montauk 11:29 AM \u2192 Jamaica 2:29 PM",
+    "why_flagged": "Public departure is exactly 1 minute earlier (allowed matching rule), but public service terminates at Jamaica while Crew Book continues to Long Island City.",
+    "status": "possible E-stop continuation \u2014 employee timetable verification required"
+  },
+  {
+    "train": "45",
+    "crew": 53,
+    "confidence": "strong",
+    "pattern": "crew_book_extends_beyond_public_terminal",
+    "crew_book": "Speonk 4:10 PM \u2192 Hunterspoint Avenue 6:10 PM",
+    "public_gtfs": "Speonk 4:10 PM \u2192 Jamaica 5:52 PM",
+    "why_flagged": "Same advertised departure, but public trip terminates Jamaica while Crew Book continues west to Hunterspoint Avenue.",
+    "status": "possible E-stop continuation \u2014 employee timetable verification required"
+  },
+  {
+    "train": "615",
+    "crew": 32,
+    "confidence": "strong",
+    "pattern": "crew_book_extends_beyond_public_terminal",
+    "crew_book": "Port Jefferson 6:14 AM \u2192 Long Island City 8:08 AM",
+    "public_gtfs": "Port Jefferson 6:13 AM \u2192 Hunterspoint Avenue 7:59 AM",
+    "why_flagged": "Public departure is 1 minute earlier (allowed), and public schedule ends at Hunterspoint Avenue while Crew Book continues to Long Island City.",
+    "status": "possible E-stop continuation \u2014 employee timetable verification required"
+  },
+  {
+    "train": "621",
+    "crew": 35,
+    "confidence": "strong",
+    "pattern": "crew_book_extends_beyond_public_terminal",
+    "crew_book": "Port Jefferson 7:32 AM \u2192 Long Island City 9:21 AM",
+    "public_gtfs": "Port Jefferson 7:31 AM \u2192 Hunterspoint Avenue 9:13 AM",
+    "why_flagged": "Public departure is 1 minute earlier (allowed), and public schedule ends at Hunterspoint Avenue while Crew Book continues to Long Island City.",
+    "status": "possible E-stop continuation \u2014 employee timetable verification required"
+  },
+  {
+    "train": "8",
+    "crew": 49,
+    "confidence": "strong",
+    "pattern": "crew_book_begins_before_public_origin",
+    "crew_book": "Long Island City 11:18 AM \u2192 Montauk 2:26 PM",
+    "public_gtfs": "First public time 11:41 AM \u2192 Montauk 2:26 PM (Jamaica is the public origin in current public timetable)",
+    "why_flagged": "Same final arrival, but Crew Book starts the train 23 minutes earlier at Long Island City.",
+    "status": "possible employee-only origin/E-stop segment \u2014 verify timetable"
+  },
+  {
+    "train": "18",
+    "crew": 10,
+    "confidence": "strong",
+    "pattern": "crew_book_begins_before_public_origin",
+    "crew_book": "Long Island City 4:16 PM \u2192 Montauk 7:41 PM",
+    "public_gtfs": "First public time 4:30 PM; Jamaica 4:48 PM \u2192 Montauk 7:41 PM",
+    "why_flagged": "Crew Book starts at Long Island City before the first public GTFS stop/time; final arrival matches.",
+    "status": "possible employee-only origin/E-stop segment \u2014 verify timetable"
+  }
+]
