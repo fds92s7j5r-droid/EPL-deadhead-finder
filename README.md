@@ -1,16 +1,18 @@
-# Deadhead Finder Sandbox v3.0.2
+# Deadhead Finder Sandbox v3.0.3
 
-Hotfix after West Side Yard legality testing.
+West Side Yard terminal/access hotfix.
 
-## Fixed
-- A to-work route is now defensively rejected unless its **actual destination arrival** is on or before the calculated access deadline.
-- West Side Yard: Penn Station arrival deadline = **report time minus 20 minutes**.
-- Jamaica Storage Yard uses the same strict deadline concept with its configured 20-minute Jamaica access allowance.
-- The priority-location comparison now shows:
-  - actual station arrival
-  - minutes before report
-  - the special access deadline (for example, Penn 4:41 PM for a 5:01 PM WSY report)
-- A route that misses the special access deadline can no longer be labeled a legal to-work route.
-- Manual GTFS upload behavior from v3.0.1 is unchanged.
+## Root cause
+v3.0.2 correctly enforced a 20-minute cutoff **when the report location itself was West Side Yard**. But Paper Rev. 8 gives Job 113 a day-specific report-location override of **Penn Station**. The router therefore treated Job 113 as an ordinary Penn report and incorrectly accepted Babylon → Penn arriving only 7 minutes before report.
 
-This remains a sandbox and does not modify Engineer Pay Log production.
+## Fix
+- EPL now keeps two separate concepts:
+  - **Crew Book report location** for the day.
+  - **Operational/home terminal** for terminal-access legality.
+- A West Side Yard assignment remains subject to the **Penn arrival 20 minutes before report** rule even when a revision says to report at Penn Station.
+- Job 113 now displays that distinction in the assignment summary.
+- Priority comparison and full route detail use the same assignment-aware access rule.
+- The v3.0.2 defensive destination-deadline check remains in place.
+- Manual GTFS upload remains unchanged.
+
+For the screenshot case: Job 113 reporting 5:01 PM must reach Penn by **4:41 PM**. The Babylon option arriving 4:54 PM must not be labeled legal.

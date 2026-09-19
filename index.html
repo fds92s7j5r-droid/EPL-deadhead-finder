@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>EPL Deadhead Finder — Sandbox v3.0.2.1</title>
+<title>EPL Deadhead Finder — Sandbox v3.0.3.1</title>
 <meta name="theme-color" content="#111827">
 <style>
 :root{color-scheme:light dark;--bg:#f3f4f6;--panel:#fff;--text:#111827;--muted:#6b7280;--line:#d1d5db;--accent:#2563eb;--good:#166534;--goodbg:#dcfce7;--warn:#92400e;--warnbg:#fef3c7;--tight:#9a3412;--tightbg:#ffedd5;--info:#1e40af;--infobg:#dbeafe;--purple:#6d28d9;--purplebg:#ede9fe;--bad:#991b1b;--badbg:#fee2e2;--shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -18,7 +18,7 @@
 <div class="wrap" id="app">
   <div class="hero">
     <div class="eyebrow">Engineer Pay Log · Deadhead Finder Research</div>
-    <h1>Deadhead Finder Sandbox v3.0.2</h1>
+    <h1>Deadhead Finder Sandbox v3.0.3</h1>
     <p class="sub">Crew Book-connected routing for passenger jobs and relief crews + official public schedules + legal transfer rules + transfer-point intelligence + Community Deadhead Notes. E Stops and equipment-train hunting are intentionally out of scope for this build.</p>
   </div>
 
@@ -423,19 +423,26 @@ function reportAccessRule(location){
   if(n==='hillside'||n==='hillside facility')return {routeStation:'Hillside Facility',minutes:1,label:'Hillside access allowance not yet certified',special:true,homePaused:true,certified:false};
   return {routeStation:location,minutes:1,label:'1-minute report buffer',special:false,homePaused:false,certified:true};
 }
+function assignmentAccessRule(a){
+  // Access legality follows the assignment's operational terminal, not merely
+  // a day-specific report-location override. Example: Job 113 can report Penn
+  // while still being a West Side Yard assignment, so Penn arrival must still
+  // be 20 minutes before report.
+  return reportAccessRule(a?.operationalTerminal||a?.workStation||'');
+}
 function assignmentFromCrewBookJob(key,date,selection={}){
   const job=CREW_BOOK_JOBS[String(key||'')],day=crewBookDay(date),schedule=resolveCrewBookSchedule(key,date);
   if(!job)return {state:'missing',job:String(key||''),selectedKey:selection.selectedKey||String(key||''),selectionType:selection.selectionType||'job',source:CREW_BOOK_SOURCE};
   if(!schedule)return {state:'off',job:String(key),selectedKey:selection.selectedKey||String(key),selectionType:selection.selectionType||'job',reliefCrew:selection.reliefCrew||null,coveredJob:selection.coveredJob||null,workStation:job.terminal||'',source:CREW_BOOK_SOURCE,day};
   const report=parseClock(schedule.start,false),rawEnd=parseClock(schedule.end,false),release=rawEnd<=report?rawEnd+1440:rawEnd;
   const svc=serviceType(date),movement=String(key)==='166'?JOB166_MOVEMENT[svc]:null;
-  return {state:'active',job:String(key),selectedKey:selection.selectedKey||String(key),selectionType:selection.selectionType||'job',reliefCrew:selection.reliefCrew||null,coveredJob:selection.coveredJob||null,label:dayName(date),day,workStation:schedule.location||job.terminal,report,release,finalArrival:movement?.finalArrival??null,finalTrain:movement?.finalTrain||'',canPractical:!!movement,ownerRelief:Array.isArray(job.relief)&&job.relief.includes(day),source:CREW_BOOK_SOURCE,jobData:job};
+  return {state:'active',job:String(key),selectedKey:selection.selectedKey||String(key),selectionType:selection.selectionType||'job',reliefCrew:selection.reliefCrew||null,coveredJob:selection.coveredJob||null,label:dayName(date),day,workStation:schedule.location||job.terminal,operationalTerminal:job.terminal,report,release,finalArrival:movement?.finalArrival??null,finalTrain:movement?.finalTrain||'',canPractical:!!movement,ownerRelief:Array.isArray(job.relief)&&job.relief.includes(day),source:CREW_BOOK_SOURCE,jobData:job};
 }
 function currentAssignment(date){
   const profile=$('profile').value;
   if(profile==='custom'){
     const next=$('afterMidnight').value==='yes';
-    return {state:'active',job:$('customJob').value.trim()||'TEST',selectedKey:'custom',selectionType:'custom',label:'Custom',workStation:$('workStation').value,report:parseClock($('reportTime').value,false),finalArrival:parseClock($('finalTime').value,next),release:parseClock($('releaseTime').value,next),canPractical:true,ownerRelief:false,source:'Manual test'};
+    return {state:'active',job:$('customJob').value.trim()||'TEST',selectedKey:'custom',selectionType:'custom',label:'Custom',workStation:$('workStation').value,operationalTerminal:$('workStation').value,report:parseClock($('reportTime').value,false),finalArrival:parseClock($('finalTime').value,next),release:parseClock($('releaseTime').value,next),canPractical:true,ownerRelief:false,source:'Manual test'};
   }
   if(isoDate(date)<CREW_BOOK_EFFECTIVE)return {state:'unsupported',job:'—',selectedKey:profile,selectionType:'job',source:CREW_BOOK_SOURCE};
   const [kind,key]=profile.split(':');
@@ -472,7 +479,7 @@ function buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline){
   const origin=findStopIdByName(station);if(!origin)return {station,error:'Station not available in loaded GTFS'};
   const legalCandidate=latestRoutes(rt,origin,work,reportDeadline,5,8*60,3).find(r=>protectedToWorkRoute(r,reportDeadline))||null;
   const legalIn=legalCandidate;
-  if(reportAccessRule(a.workStation).homePaused)return {station,legalIn,homePaused:true};
+  if(assignmentAccessRule(a).homePaused)return {station,legalIn,homePaused:true};
   const legalHome=earliestRoutes(rtHome,work,origin,a.release,0,5,a.release+8*60,6)[0]||null;
   const practicalHome=$('showPractical').checked&&a.canPractical&&a.finalArrival!=null?earliestRoute(rtHome,work,origin,a.finalArrival,1,1,a.finalArrival+8*60):null;
   let promoted=false,chosenHome=legalHome,chosenKind='legal';
@@ -488,7 +495,7 @@ function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   const root=$('priorityComparison');if(!root)return;const prefs=loadPriorityStations();
   const rows=prefs.map((station,i)=>buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline));
   root.innerHTML=rows.map((x,i)=>{const active=$('homeStation').value===x.station;if(x.error)return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${escapeHtml(x.error)}</small></div><button type="button" class="btn secondary smallbtn compareView" data-station="${escapeHtml(x.station)}">View</button></div></div>`;
-    const access=reportAccessRule(a.workStation);
+    const access=assignmentAccessRule(a);
     const to=x.legalIn?`<div class="compareMain">Leave ${fmtTime(x.legalIn.depart)}</div><div class="compareSub">arrive ${fmtTime(x.legalIn.arrive)} · ${Math.round(a.report-x.legalIn.arrive)} min before report${access.minutes>1?` · ${escapeHtml(access.routeStation)} deadline ${fmtTime(reportDeadline)}`:''} · ${escapeHtml(summarizeTransfers(x.legalIn))}</div>`:`<div class="compareMain">No legal route found</div><div class="compareSub">${access.minutes>1?`Must reach ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} (${access.minutes} min before report).`:`Must arrive before the report deadline.`}</div>`;
     let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome)home=`<div class="compareMain ${x.promoted?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${x.promoted?'Verified practical recommendation':'Protected route'} · leave ${fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>`;else home='<div class="compareMain">No route found</div>';
     return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${i===0?'First-choice location':`Preference ${i+1}`}${active?' · viewing details':''}</small></div><button type="button" class="btn ${active?'primary':'secondary'} smallbtn compareView" data-station="${escapeHtml(x.station)}">${active?'Viewing':'View details'}</button></div><div class="compareCols"><div class="compareCell"><b>TO WORK</b>${to}</div><div class="compareCell"><b>GOING HOME</b>${home}</div></div></div>`;
@@ -528,15 +535,16 @@ function render(){
    return;
  }
 
- const access=reportAccessRule(a.workStation),reportDeadline=a.report-access.minutes;
+ const access=assignmentAccessRule(a),reportDeadline=a.report-access.minutes;
  const assignmentLabel=a.selectionType==='relief'?`Relief ${a.reliefCrew} → Job ${a.job}`:`Job ${a.job}`;
- $('jobStats').innerHTML=`<div class="stat"><b>Assignment</b><span>${escapeHtml(assignmentLabel)}</span></div><div class="stat"><b>Report location</b><span>${escapeHtml(a.workStation)}</span></div><div class="stat"><b>Report</b><span>${fmtTime(a.report)}</span></div><div class="stat"><b>Release</b><span>${fmtTime(a.release)}</span></div>`;
+ const reportLocationLabel=(a.operationalTerminal&&a.workStation!==a.operationalTerminal)?`${a.workStation} · ${a.operationalTerminal} assignment`:a.workStation;
+ $('jobStats').innerHTML=`<div class="stat"><b>Assignment</b><span>${escapeHtml(assignmentLabel)}</span></div><div class="stat"><b>Report location</b><span>${escapeHtml(reportLocationLabel)}</span></div><div class="stat"><b>Report</b><span>${fmtTime(a.report)}</span></div><div class="stat"><b>Release</b><span>${fmtTime(a.release)}</span></div>`;
 
  const messages=[];
  if(a.selectionType==='relief')messages.push(`<strong>Relief Crew ${escapeHtml(a.reliefCrew)} covers Job ${escapeHtml(a.job)} on ${escapeHtml(dayName(date))}.</strong> Deadhead Finder is routing the covered assignment.`);
  else if(a.ownerRelief)messages.push(`<strong>${escapeHtml(dayName(date))} is a regular-owner relief day for Job ${escapeHtml(a.job)}.</strong> The assignment still operates; EPL is routing it for the relief/extra engineer working it.`);
  if(access.certified===false)messages.push(`<strong>Terminal access rule still needed.</strong> Train routing is shown to ${escapeHtml(access.routeStation)}, but ${escapeHtml(access.label)}. Do not treat the station-arrival deadline as fully protected yet.`);
- else if(access.minutes>1)messages.push(`<strong>${escapeHtml(a.workStation)} legal-arrival rule:</strong> your deadhead train must arrive at ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} — ${access.minutes} minutes before the ${fmtTime(a.report)} report. A later arrival is not legal even if you can physically make the report.`);
+ else if(access.minutes>1)messages.push(`<strong>${escapeHtml(a.operationalTerminal||a.workStation)} legal-arrival rule:</strong> your deadhead train must arrive at ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} — ${access.minutes} minutes before the ${fmtTime(a.report)} report. A later arrival is not legal even if the Crew Book's day-specific report location is ${escapeHtml(a.workStation)} or you can physically make the report.`);
  if(!a.canPractical&&a.selectionType!=='custom')messages.push(`<strong>Movement detail not modeled yet.</strong> Going-home routes start at the printed ${fmtTime(a.release)} release. Pre-release practical options stay off until EPL knows the final working-train arrival for Job ${escapeHtml(a.job)}.`);
  if(messages.length){assignmentStatus.classList.remove('hidden');assignmentStatus.innerHTML=`<span class="dot"></span><span>${messages.join('<br><br>')}</span>`}else{assignmentStatus.classList.add('hidden');assignmentStatus.innerHTML=''}
 
