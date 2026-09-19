@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>EPL Deadhead Finder — Sandbox v3.0.1.1</title>
+<title>EPL Deadhead Finder — Sandbox v3.0.2.1</title>
 <meta name="theme-color" content="#111827">
 <style>
 :root{color-scheme:light dark;--bg:#f3f4f6;--panel:#fff;--text:#111827;--muted:#6b7280;--line:#d1d5db;--accent:#2563eb;--good:#166534;--goodbg:#dcfce7;--warn:#92400e;--warnbg:#fef3c7;--tight:#9a3412;--tightbg:#ffedd5;--info:#1e40af;--infobg:#dbeafe;--purple:#6d28d9;--purplebg:#ede9fe;--bad:#991b1b;--badbg:#fee2e2;--shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -18,7 +18,7 @@
 <div class="wrap" id="app">
   <div class="hero">
     <div class="eyebrow">Engineer Pay Log · Deadhead Finder Research</div>
-    <h1>Deadhead Finder Sandbox v3.0.1</h1>
+    <h1>Deadhead Finder Sandbox v3.0.2</h1>
     <p class="sub">Crew Book-connected routing for passenger jobs and relief crews + official public schedules + legal transfer rules + transfer-point intelligence + Community Deadhead Notes. E Stops and equipment-train hunting are intentionally out of scope for this build.</p>
   </div>
 
@@ -372,6 +372,9 @@ function latestRoutes(rt,origin,dest,deadline,gap,maxLookback=8*60,limit=2){
   for(const s of list.slice(0,140)){
     const r=dijkstraFromStarts(rt,[s],dest,gap,deadline,true);
     if(!r)continue;
+    // Defensive legality gate. The destination arrival itself must satisfy
+    // the requested deadline (important for WSY/JSY access cutoffs).
+    if(!Number.isFinite(r.arrive)||r.arrive>deadline)continue;
     const sig=physicalRouteSig(r);
     if(seen.has(sig))continue;
     seen.add(sig);
@@ -381,6 +384,9 @@ function latestRoutes(rt,origin,dest,deadline,gap,maxLookback=8*60,limit=2){
   }
   candidates.sort((a,b)=>(b.preferenceScore-a.preferenceScore)||(b.depart-a.depart)||(a.arrive-b.arrive));
   return candidates.slice(0,limit);
+}
+function protectedToWorkRoute(r,reportDeadline){
+  return !!(r&&Number.isFinite(r.arrive)&&Number.isFinite(reportDeadline)&&r.arrive<=reportDeadline);
 }
 function earliestRoutes(rt,origin,dest,baseTime,initialGap,transferGap,deadline=baseTime+8*60,limit=4){
   const starts=startEventsAt(rt,origin,baseTime+initialGap,deadline);
@@ -464,7 +470,8 @@ function addPriorityStation(){const name=$('priorityAddStation')?.value;if(!name
 function summarizeTransfers(r){if(!r)return'';if(!r.gaps.length)return'Direct';return r.gaps.map(g=>`${stopName(g.stopId)} ${g.minutes}m`).join(' · ')}
 function buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline){
   const origin=findStopIdByName(station);if(!origin)return {station,error:'Station not available in loaded GTFS'};
-  const legalIn=latestRoutes(rt,origin,work,reportDeadline,5,8*60,1)[0]||null;
+  const legalCandidate=latestRoutes(rt,origin,work,reportDeadline,5,8*60,3).find(r=>protectedToWorkRoute(r,reportDeadline))||null;
+  const legalIn=legalCandidate;
   if(reportAccessRule(a.workStation).homePaused)return {station,legalIn,homePaused:true};
   const legalHome=earliestRoutes(rtHome,work,origin,a.release,0,5,a.release+8*60,6)[0]||null;
   const practicalHome=$('showPractical').checked&&a.canPractical&&a.finalArrival!=null?earliestRoute(rtHome,work,origin,a.finalArrival,1,1,a.finalArrival+8*60):null;
@@ -481,7 +488,8 @@ function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   const root=$('priorityComparison');if(!root)return;const prefs=loadPriorityStations();
   const rows=prefs.map((station,i)=>buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline));
   root.innerHTML=rows.map((x,i)=>{const active=$('homeStation').value===x.station;if(x.error)return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${escapeHtml(x.error)}</small></div><button type="button" class="btn secondary smallbtn compareView" data-station="${escapeHtml(x.station)}">View</button></div></div>`;
-    const to=x.legalIn?`<div class="compareMain">Leave ${fmtTime(x.legalIn.depart)}</div><div class="compareSub">arrive ${fmtTime(x.legalIn.arrive)} · ${escapeHtml(summarizeTransfers(x.legalIn))}</div>`:`<div class="compareMain">No legal route found</div>`;
+    const access=reportAccessRule(a.workStation);
+    const to=x.legalIn?`<div class="compareMain">Leave ${fmtTime(x.legalIn.depart)}</div><div class="compareSub">arrive ${fmtTime(x.legalIn.arrive)} · ${Math.round(a.report-x.legalIn.arrive)} min before report${access.minutes>1?` · ${escapeHtml(access.routeStation)} deadline ${fmtTime(reportDeadline)}`:''} · ${escapeHtml(summarizeTransfers(x.legalIn))}</div>`:`<div class="compareMain">No legal route found</div><div class="compareSub">${access.minutes>1?`Must reach ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} (${access.minutes} min before report).`:`Must arrive before the report deadline.`}</div>`;
     let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome)home=`<div class="compareMain ${x.promoted?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${x.promoted?'Verified practical recommendation':'Protected route'} · leave ${fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>`;else home='<div class="compareMain">No route found</div>';
     return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${i===0?'First-choice location':`Preference ${i+1}`}${active?' · viewing details':''}</small></div><button type="button" class="btn ${active?'primary':'secondary'} smallbtn compareView" data-station="${escapeHtml(x.station)}">${active?'Viewing':'View details'}</button></div><div class="compareCols"><div class="compareCell"><b>TO WORK</b>${to}</div><div class="compareCell"><b>GOING HOME</b>${home}</div></div></div>`;
   }).join('');
@@ -528,6 +536,7 @@ function render(){
  if(a.selectionType==='relief')messages.push(`<strong>Relief Crew ${escapeHtml(a.reliefCrew)} covers Job ${escapeHtml(a.job)} on ${escapeHtml(dayName(date))}.</strong> Deadhead Finder is routing the covered assignment.`);
  else if(a.ownerRelief)messages.push(`<strong>${escapeHtml(dayName(date))} is a regular-owner relief day for Job ${escapeHtml(a.job)}.</strong> The assignment still operates; EPL is routing it for the relief/extra engineer working it.`);
  if(access.certified===false)messages.push(`<strong>Terminal access rule still needed.</strong> Train routing is shown to ${escapeHtml(access.routeStation)}, but ${escapeHtml(access.label)}. Do not treat the station-arrival deadline as fully protected yet.`);
+ else if(access.minutes>1)messages.push(`<strong>${escapeHtml(a.workStation)} legal-arrival rule:</strong> your deadhead train must arrive at ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} — ${access.minutes} minutes before the ${fmtTime(a.report)} report. A later arrival is not legal even if you can physically make the report.`);
  if(!a.canPractical&&a.selectionType!=='custom')messages.push(`<strong>Movement detail not modeled yet.</strong> Going-home routes start at the printed ${fmtTime(a.release)} release. Pre-release practical options stay off until EPL knows the final working-train arrival for Job ${escapeHtml(a.job)}.`);
  if(messages.length){assignmentStatus.classList.remove('hidden');assignmentStatus.innerHTML=`<span class="dot"></span><span>${messages.join('<br><br>')}</span>`}else{assignmentStatus.classList.add('hidden');assignmentStatus.innerHTML=''}
 
@@ -538,7 +547,7 @@ function render(){
 
  const origin=findStopIdByName(home),work=findStopIdByName(access.routeStation);if(!origin||!work){$('priorityComparison').innerHTML='<div class="empty">Load the full GTFS to compare your saved deadhead locations.</div>';$('toWorkResults').innerHTML=`<div class="empty">Could not match ${escapeHtml(access.routeStation)} or ${escapeHtml(home)} in the loaded GTFS. Load the full feed or choose another station.</div>`;$('homeResults').innerHTML='';bindRouteButtons();return}
  const rt=buildRuntime(date,[0]);if(!rt.events.size){$('priorityComparison').innerHTML='<div class="empty">No active GTFS service found for this date.</div>';$('toWorkResults').innerHTML='<div class="empty">No active GTFS service found for this date in the loaded feed.</div>';$('homeResults').innerHTML='';bindRouteButtons();return}
- const legalIn=latestRoutes(rt,origin,work,reportDeadline,5,8*60,2),practicalIn=latestRoutes(rt,origin,work,reportDeadline,1,8*60,1);let inHtml='';
+ const legalIn=latestRoutes(rt,origin,work,reportDeadline,5,8*60,5).filter(r=>protectedToWorkRoute(r,reportDeadline)).slice(0,2),practicalIn=latestRoutes(rt,origin,work,reportDeadline,1,8*60,3).filter(r=>protectedToWorkRoute(r,reportDeadline)).slice(0,1);let inHtml='';
  if(legalIn[0])inHtml+=renderRoute(legalIn[0],{title:access.certified===false?'Latest protected train path (access pending)':'Latest legal route',class:routeClass(legalIn[0]),notes:notesFor(a,date,legalIn[0],'to'),direction:'to',assignment:a,reportTime:a.report,reportDeadline,access});
  if($('showPractical').checked&&practicalIn[0]&&(!legalIn[0]||practicalIn[0].depart>legalIn[0].depart+.1))inHtml+=renderRoute(practicalIn[0],{title:'Later practical option',class:routeClass(practicalIn[0]),notes:notesFor(a,date,practicalIn[0],'to'),direction:'to',assignment:a,reportTime:a.report,reportDeadline,access});
  if(legalIn[1])inHtml+=renderRoute(legalIn[1],{title:'Earlier legal backup',class:routeClass(legalIn[1]),notes:notesFor(a,date,legalIn[1],'to'),direction:'to',assignment:a,reportTime:a.report,reportDeadline,access});
