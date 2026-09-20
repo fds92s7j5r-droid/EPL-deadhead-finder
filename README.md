@@ -1,29 +1,44 @@
-# Engineer Pay Log — Deadhead Finder Sandbox v3.1.0
+# Engineer Pay Log — Deadhead Finder Sandbox v3.2.0
 
-## West Side Yard Terminal Reality Layer
+This build rolls the untested v3.1.1 GTFS-cache work together with two routing improvements from the latest review.
 
-This build models two separate going-home clocks for West Side Yard jobs.
+## 1. Crew Book-derived West Side Yard intelligence
+Instead of manually seeding Train 1902, v3.2 derives WSY train intelligence from the current GO 202 Crew Book:
 
-### 1. Protected / paper-legal
-- Printed WSY release remains the Crew Book release.
-- Legal walking time from West Side Yard back to Penn is **20 minutes**.
-- Therefore a protected deadhead from Penn cannot begin before:
-  **printed release + 20 minutes**.
+- `w` + **Lv. Penn Station** = originates in West Side Yard.
+- `w` + **Arr. Penn Station** = terminates in West Side Yard.
+- 283 unique Penn-origin `w` train numbers were extracted.
+- 277 unique Penn-terminating `w` train numbers were extracted for future use.
+- Train 102, 802, 1902 and 1904 are all in the derived origin set.
 
-### 2. Practical / real-world WSY intercept
-- EPL may surface a train that is known to **originate in West Side Yard**.
-- Its timetable Q stop is modeled as **15 minutes before the public Penn departure**.
-- If that Q stop falls from **15 minutes before the printed release up to 20 minutes after release**, EPL can show it as:
-  **POSSIBLE WSY INTERCEPT — NOT PROTECTED**.
-- This does not mean the train will wait. It is only a possible real-world connection.
-- A Community Deadhead Note can be attached to the route. In the future, repeated community confirmations can increase confidence without ever changing the paper-legal calculation.
+For a current GTFS trip that matches a `w`-origin train, EPL uses the Crew Book Penn clock when it is within five minutes of the GTFS public time, then calculates the WSY Q stop as **Crew Book Penn time − 15 minutes**. This preserves the known one-minute public-vs-Crew-Book difference.
 
-### Seeded research train
-- **Train 1902** is currently entered as a known WSY-origin train so the concept can be tested.
-- More WSY-origin trains should be added only when their origin/Q-stop relationship is certified.
+## 2. Dominated-transfer cleanup
+Deadhead Finder now suppresses a route that:
+- starts at Station A,
+- rides another train somewhere else,
+- then transfers onto Train B downstream,
+- when Train B was already boardable at Station A after the engineer became available.
 
-### Important
-- Protected and practical routing are intentionally separate.
-- A practical WSY intercept never becomes “legal” because of a note.
-- Other yard egress rules (JSY, Babylon Yard, Ronkonkoma Yard, Hillside) remain paused until certified.
-- Manual GTFS upload and all v3.0.4 routing behavior remain in place.
+Example that should disappear:
+**Penn → Train 802 → Jamaica → Train 1904**
+
+If Train 1904 is boardable at Penn, EPL should tell the engineer to wait at Penn and board 1904 there.
+
+When equivalent routes arrive at the same time, the router now prefers:
+1. fewer train legs,
+2. then the later departure from the origin.
+
+## 3. GTFS persistence from v3.1.1
+The last successfully loaded GTFS ZIP is cached in IndexedDB and should restore automatically on the next reload when testing from the same GitHub Pages origin.
+
+## Suggested first test
+Use **Job 108** again.
+
+For a 12:28 AM WSY release:
+- protected Penn availability remains **12:48 AM**;
+- Train **1902** should still be recognized as a possible WSY intercept;
+- Train **102** should now also be recognized as a WSY-origin candidate when it helps the selected destination;
+- a protected Ronkonkoma result should no longer recommend **802 → 1904 at Jamaica** if 1904 can be boarded directly at Penn.
+
+This remains a sandbox and does not modify EPL production.
