@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>EPL Deadhead Finder — Sandbox v3.2.0.1</title>
+<title>EPL Deadhead Finder — Sandbox v3.2.1.1</title>
 <meta name="theme-color" content="#111827">
 <style>
 :root{color-scheme:light dark;--bg:#f3f4f6;--panel:#fff;--text:#111827;--muted:#6b7280;--line:#d1d5db;--accent:#2563eb;--good:#166534;--goodbg:#dcfce7;--warn:#92400e;--warnbg:#fef3c7;--tight:#9a3412;--tightbg:#ffedd5;--info:#1e40af;--infobg:#dbeafe;--purple:#6d28d9;--purplebg:#ede9fe;--bad:#991b1b;--badbg:#fee2e2;--shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -18,7 +18,7 @@
 <div class="wrap" id="app">
   <div class="hero">
     <div class="eyebrow">Engineer Pay Log · Deadhead Finder Research</div>
-    <h1>Deadhead Finder Sandbox v3.2.0</h1>
+    <h1>Deadhead Finder Sandbox v3.2.1</h1>
     <p class="sub">Crew Book-connected routing + protected terminal rules + Crew Book-derived West Side Yard intelligence + Community Deadhead Notes. Unnecessary downstream transfers are now suppressed. E Stops remain out of scope.</p>
   </div>
 
@@ -88,7 +88,7 @@
     <div class="actions"><button class="btn secondary smallbtn" id="clearLocalNotes" type="button">Clear my test notes</button></div>
   </section>
 
-  <section class="card"><h2>What v3.0 is testing</h2><div class="source"><p><strong>Crew Book connection:</strong> the assignment picker now uses the same certified GO 202 Rev. 7 + Paper Rev. 8 passenger schedule data already used by Engineer Pay Log. Regular passenger assignments and passenger relief crews are available; Extra Crew-only jobs are intentionally omitted from the picker.</p><p><strong>Relief crews:</strong> selecting a relief crew resolves the covered assignment for the selected day before routing. A regular owner relief day does not make the assignment disappear — EPL still routes the job for the relief/extra engineer working it.</p><p><strong>Legal timing:</strong> every train-to-train transfer must be at least 5 minutes. A normal station report requires arrival at least 1 minute before report. West Side Yard requires Penn 20 minutes before report, Jamaica Storage Yard requires Jamaica 20 minutes before report, and Babylon Yard uses the known 35-minute station-to-yard allowance.</p><p><strong>Terminal reality layer:</strong> West Side Yard now has two separate going-home clocks. Paper legal = Penn 20 minutes after printed release. Practical = any of the <strong>283 Crew Book “w”-marked Penn-origin train numbers</strong> can be evaluated as a possible yard intercept when that train exists in the current GTFS. The Crew Book Penn time is used to derive the 15-minute WSY Q stop when it matches the GTFS trip.</p><p><strong>Dominated-transfer cleanup:</strong> EPL now rejects itineraries that ride one train away from the current station only to transfer onto a later train that was already boardable at the original station. Example: Penn → 802 → Jamaica → 1904 is suppressed when 1904 can simply be boarded at Penn.</p><p><strong>Terminal rules still being filled in:</strong> other yard/employee-location egress allowances remain pending until certified; EPL still prefers no answer over a confident wrong answer.</p><p><strong>Going home:</strong> every connected job can route from its printed release. Pre-release practical routing needs the final working-train arrival; that movement detail is currently certified only for Job 166 in this sandbox, so other jobs deliberately start at printed release.</p><p><strong>Transfer intelligence:</strong> direct rides and Jamaica transfers are preferred, Woodside is second, intermediate passenger stations are deprioritized, and employee/operational transfer locations are strongly deprioritized.</p><p><strong>Service-day crossover:</strong> assignment rules follow the report date. Early-AM reports also search the previous calendar day's GTFS service so a Sunday-night train can legally deadhead someone to a Monday 12:35 AM report. Going-home trips after midnight use the actual next calendar day service.</p><p><strong>GTFS persistence:</strong> after one successful manual or automatic GTFS load, the ZIP is cached in this browser with IndexedDB and restored automatically on the next test. Upload again only when you intentionally want a newer schedule.</p></div></section>
+  <section class="card"><h2>What v3.0 is testing</h2><div class="source"><p><strong>Crew Book connection:</strong> the assignment picker now uses the same certified GO 202 Rev. 7 + Paper Rev. 8 passenger schedule data already used by Engineer Pay Log. Regular passenger assignments and passenger relief crews are available; Extra Crew-only jobs are intentionally omitted from the picker.</p><p><strong>Relief crews:</strong> selecting a relief crew resolves the covered assignment for the selected day before routing. A regular owner relief day does not make the assignment disappear — EPL still routes the job for the relief/extra engineer working it.</p><p><strong>Legal timing:</strong> every train-to-train transfer must be at least 5 minutes. A normal station report requires arrival at least 1 minute before report. West Side Yard requires Penn 20 minutes before report, Jamaica Storage Yard requires Jamaica 20 minutes before report, and Babylon Yard uses the known 35-minute station-to-yard allowance.</p><p><strong>Terminal reality layer:</strong> West Side Yard now has two separate going-home clocks. Paper legal = Penn 20 minutes after printed release. Practical = any of the <strong>283 Crew Book “w”-marked Penn-origin train numbers</strong> can be evaluated as a possible yard intercept when that train exists in the current GTFS. The Crew Book Penn time is used to derive the 15-minute WSY Q stop when it matches the GTFS trip.</p><p><strong>Dominated-transfer cleanup:</strong> EPL now rejects itineraries that ride one train away from the current station only to transfer onto a later train that was already boardable at the original station. Example: Penn → 802 → Jamaica → 1904 is suppressed when 1904 can simply be boarded at Penn.</p><p><strong>WSY practical ranking:</strong> direct yard-origin trains are preferred over transfer-heavy practical options when the direct train arrives within 30 minutes of the fastest possible practical route. A materially faster transfer route remains visible as a faster possible alternative. Protected routing remains separate.</p><p><strong>Terminal rules still being filled in:</strong> other yard/employee-location egress allowances remain pending until certified; EPL still prefers no answer over a confident wrong answer.</p><p><strong>Going home:</strong> every connected job can route from its printed release. Pre-release practical routing needs the final working-train arrival; that movement detail is currently certified only for Job 166 in this sandbox, so other jobs deliberately start at printed release.</p><p><strong>Transfer intelligence:</strong> direct rides and Jamaica transfers are preferred, Woodside is second, intermediate passenger stations are deprioritized, and employee/operational transfer locations are strongly deprioritized.</p><p><strong>Service-day crossover:</strong> assignment rules follow the report date. Early-AM reports also search the previous calendar day's GTFS service so a Sunday-night train can legally deadhead someone to a Monday 12:35 AM report. Going-home trips after midnight use the actual next calendar day service.</p><p><strong>GTFS persistence:</strong> after one successful manual or automatic GTFS load, the ZIP is cached in this browser with IndexedDB and restored automatically on the next test. Upload again only when you intentionally want a newer schedule.</p></div></section>
 </div>
 
 <div id="noteModal" class="modalback hidden" aria-hidden="true">
@@ -553,6 +553,27 @@ function wsyPracticalRoutes(rt,pennStop,destId,release,deadline=release+8*60,lim
   return out.slice(0,limit);
 }
 
+function chooseWsyPractical(routes){
+  const list=[...(routes||[])];
+  if(!list.length)return {recommended:null,faster:null,direct:null,fastest:null};
+
+  // True practical preference:
+  // A direct train from WSY is generally preferable to a transfer-heavy option.
+  // If the best direct option gets the engineer home within 30 minutes of the
+  // absolute fastest possible WSY route, make the direct train the recommendation.
+  // Otherwise the materially faster route can win.
+  const byArrival=[...list].sort((a,b)=>(a.arrive-b.arrive)||((a.legs?.length||0)-(b.legs?.length||0)));
+  const fastest=byArrival[0];
+  const directs=list.filter(r=>(r.legs?.length||0)===1).sort((a,b)=>(a.arrive-b.arrive)||(b.depart-a.depart));
+  const direct=directs[0]||null;
+
+  let recommended=fastest;
+  if(direct && direct.arrive-fastest.arrive<=30)recommended=direct;
+
+  const faster=(fastest&&recommended&&routeSig(fastest)!==routeSig(recommended)&&fastest.arrive<recommended.arrive)?fastest:null;
+  return {recommended,faster,direct,fastest};
+}
+
 function findStopIdByName(name){const norm=s=>String(s).toLowerCase().replace(/madison/g,'').replace(/station/g,'').replace(/\s+/g,' ').trim();const n=norm(name);let exact=null,partial=null;for(const [id,s] of data.stops){const sn=norm(s.stop_name);if(sn===n){exact=id;break}if(sn.includes(n)||n.includes(sn))partial=partial||id}return exact||partial}
 function stopName(id){return data.stops.get(id)?.stop_name||id}
 
@@ -648,9 +669,10 @@ function buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline){
   const paperAvailable=a.release+(egress.paperMinutes||0);
   const legalHome=earliestRoutes(rtHome,homeStart,origin,paperAvailable,0,5,paperAvailable+8*60,6)[0]||null;
 
-  let practicalHome=null;
+  let practicalHome=null,practicalAlternates=[];
   if($('showPractical').checked&&egress.practicalMode==='wsy_intercept'){
-    practicalHome=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,1)[0]||null;
+    practicalAlternates=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,12);
+    practicalHome=chooseWsyPractical(practicalAlternates).recommended;
   }else if($('showPractical').checked&&a.canPractical&&a.finalArrival!=null){
     practicalHome=earliestRoute(rtHome,homeStart,origin,a.finalArrival,1,1,a.finalArrival+8*60);
   }
@@ -666,7 +688,7 @@ function buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline){
     if(promoted){chosenHome=practicalHome;chosenKind='verified practical'}
     else if(!legalHome){chosenHome=practicalHome;chosenKind='possible practical'}
   }
-  return {station,legalIn,legalHome,practicalHome,chosenHome,chosenKind,promoted,homeRule:egress,paperAvailable};
+  return {station,legalIn,legalHome,practicalHome,practicalAlternates,chosenHome,chosenKind,promoted,homeRule:egress,paperAvailable};
 }
 function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   const demoNotice=data?.isDemo?'<div class="status" style="margin:0 0 10px"><span class="dot"></span><span><strong>Demo schedule loaded.</strong> Babylon can calculate from the built-in sample. Ronkonkoma, Hicksville, Patchogue, and other locations will populate after the full GTFS is loaded.</span></div>':'';
@@ -676,7 +698,7 @@ function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   root.innerHTML=rows.map((x,i)=>{const active=$('homeStation').value===x.station;if(x.error)return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${escapeHtml(x.error)}</small></div><button type="button" class="btn secondary smallbtn compareView" data-station="${escapeHtml(x.station)}">View</button></div></div>`;
     const access=assignmentAccessRule(a);
     const to=x.legalIn?`<div class="compareMain">Leave ${fmtTime(x.legalIn.depart)}</div><div class="compareSub">arrive ${fmtTime(x.legalIn.arrive)} · ${Math.round(a.report-x.legalIn.arrive)} min before report${access.minutes>1?` · ${escapeHtml(access.routeStation)} deadline ${fmtTime(reportDeadline)}`:''} · ${escapeHtml(summarizeTransfers(x.legalIn))}</div>`:`<div class="compareMain">No legal route found</div><div class="compareSub">${access.minutes>1?`Must reach ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} (${access.minutes} min before report).`:`Must arrive before the report deadline.`}</div>`;
-    let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome){const practicalOnly=x.chosenKind==='possible practical';const label=x.promoted?'Verified practical recommendation':(practicalOnly?'Possible WSY intercept · not protected':'Protected route');home=`<div class="compareMain ${(x.promoted||practicalOnly)?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${label} · ${x.chosenHome.wsyIntercept?'WSY Q '+fmtTime(x.chosenHome.wsyIntercept.qStop):'leave '+fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>`}else home='<div class="compareMain">No route found</div>';
+    let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome){const practicalOnly=x.chosenKind==='possible practical';const label=x.promoted?'Verified practical recommendation':(practicalOnly?'Possible WSY intercept · not protected':'Protected route');let extra='';if(x.homeRule?.practicalMode==='wsy_intercept'&&x.practicalHome&&x.legalHome){const direct=(x.practicalHome.legs?.length||0)===1?'direct ':'';extra=`<div class="compareSub comparePractical">${direct}WSY practical option: #${escapeHtml(x.practicalHome.wsyIntercept?.train||x.practicalHome.legs?.[0]?.train||'')} · arrive ${fmtTime(x.practicalHome.arrive)} · not protected</div>`}home=`<div class="compareMain ${(x.promoted||practicalOnly)?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${label} · ${x.chosenHome.wsyIntercept?'WSY Q '+fmtTime(x.chosenHome.wsyIntercept.qStop):'leave '+fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>${extra}`}else home='<div class="compareMain">No route found</div>';
     return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${i===0?'First-choice location':`Preference ${i+1}`}${active?' · viewing details':''}</small></div><button type="button" class="btn ${active?'primary':'secondary'} smallbtn compareView" data-station="${escapeHtml(x.station)}">${active?'Viewing':'View details'}</button></div><div class="compareCols"><div class="compareCell"><b>TO WORK</b>${to}</div><div class="compareCell"><b>GOING HOME</b>${home}</div></div></div>`;
   }).join('');
   root.querySelectorAll('.compareView').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.station;if([...$('homeStation').options].some(o=>o.value===name)){$('homeStation').value=name;render()}}));
@@ -759,9 +781,11 @@ function render(){
  const legalHomes=earliestRoutes(rtHome,homeStart,origin,paperAvailable,0,5,paperAvailable+8*60,6),legalHome=legalHomes[0]||null;
  const rawFastestHome=(()=>{const starts=startEventsAt(rtHome,homeStart,paperAvailable,paperAvailable+8*60),cands=[],seen=new Set();for(const s of starts.slice(0,160)){const r=dijkstraFromStarts(rtHome,[s],origin,5,paperAvailable+8*60,false);if(!r)continue;if(routeHasDominatedTransfer(rtHome,r,homeStart,paperAvailable))continue;const sig=physicalRouteSig(r);if(seen.has(sig))continue;seen.add(sig);cands.push(r)}cands.sort((a,b)=>(a.arrive-b.arrive)||((a.legs?.length||0)-(b.legs?.length||0))||(b.depart-a.depart));return cands[0]||null})();
 
- let practicalHome=null;
+ let practicalHome=null,wsyPracticalSet=null;
  if($('showPractical').checked&&egress.practicalMode==='wsy_intercept'){
-   practicalHome=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,1)[0]||null;
+   const candidates=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,12);
+   wsyPracticalSet=chooseWsyPractical(candidates);
+   practicalHome=wsyPracticalSet.recommended;
  }else if($('showPractical').checked&&a.canPractical&&a.finalArrival!=null){
    practicalHome=earliestRoute(rtHome,homeStart,origin,a.finalArrival,1,1,a.finalArrival+8*60);
  }
@@ -769,10 +793,38 @@ function render(){
  const practicalMeta=(()=>{if(!practicalHome)return null;const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome),notes=notesFor(a,date,practicalHome,'home'),verified=notes.some(n=>n.status?.includes('VERIFIED')),show=!same,savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;return {same,notes,verified,show,savings};})();
  const promoteVerifiedPractical=!!(practicalMeta?.show&&practicalMeta.verified&&(!legalHome||practicalMeta.savings>=30));
  const practicalClass=practicalHome?.wsyIntercept?{key:'tight',label:'POSSIBLE WSY INTERCEPT'}:routeClass(practicalHome,practicalHome&&a.finalArrival!=null?Math.round(practicalHome.depart-a.finalArrival):null,!!(practicalHome&&practicalHome.depart<a.release));
- if(promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:'Recommended practical route',class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
- if(legalHome)homeHtml+=renderRoute(legalHome,{title:promoteVerifiedPractical?'Fully protected alternative':'Preferred protected route home',class:routeClass(legalHome),notes:notesFor(a,date,legalHome,'home'),direction:'home',assignment:a,paperAvailable});
- if(rawFastestHome&&legalHome&&physicalRouteSig(rawFastestHome)!==physicalRouteSig(legalHome)&&rawFastestHome.arrive+10<=legalHome.arrive)homeHtml+=renderRoute(rawFastestHome,{title:promoteVerifiedPractical?'Faster protected alternate':'Faster protected alternate',class:routeClass(rawFastestHome),notes:notesFor(a,date,rawFastestHome,'home'),direction:'home',assignment:a,paperAvailable});
- if(practicalMeta?.show&&!promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:practicalHome.wsyIntercept?'Possible West Side Yard intercept':(practicalMeta.verified?'Verified practical option':'Faster practical option'),class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
+
+ if(egress.practicalMode==='wsy_intercept'&&wsyPracticalSet?.recommended){
+   const recommended=wsyPracticalSet.recommended;
+   const recDirect=(recommended.legs?.length||0)===1;
+   homeHtml+=renderRoute(recommended,{
+     title:recDirect?'Recommended practical WSY route':'Recommended practical WSY option',
+     class:{key:'tight',label:'NOT PROTECTED'},
+     notes:notesFor(a,date,recommended,'home'),
+     direction:'home',assignment:a,paperAvailable
+   });
+
+   if(wsyPracticalSet.faster){
+     homeHtml+=renderRoute(wsyPracticalSet.faster,{
+       title:'Faster possible WSY alternative',
+       class:{key:'tight',label:'NOT PROTECTED'},
+       notes:notesFor(a,date,wsyPracticalSet.faster,'home'),
+       direction:'home',assignment:a,paperAvailable
+     });
+   }
+
+   if(legalHome)homeHtml+=renderRoute(legalHome,{
+     title:'Fully protected route home',
+     class:routeClass(legalHome),
+     notes:notesFor(a,date,legalHome,'home'),
+     direction:'home',assignment:a,paperAvailable
+   });
+ }else{
+   if(promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:'Recommended practical route',class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
+   if(legalHome)homeHtml+=renderRoute(legalHome,{title:promoteVerifiedPractical?'Fully protected alternative':'Preferred protected route home',class:routeClass(legalHome),notes:notesFor(a,date,legalHome,'home'),direction:'home',assignment:a,paperAvailable});
+   if(practicalMeta?.show&&!promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:practicalMeta.verified?'Verified practical option':'Faster practical option',class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
+ }
+ if(rawFastestHome&&legalHome&&physicalRouteSig(rawFastestHome)!==physicalRouteSig(legalHome)&&rawFastestHome.arrive+10<=legalHome.arrive&&egress.practicalMode!=='wsy_intercept')homeHtml+=renderRoute(rawFastestHome,{title:promoteVerifiedPractical?'Faster protected alternate':'Faster protected alternate',class:routeClass(rawFastestHome),notes:notesFor(a,date,rawFastestHome,'home'),direction:'home',assignment:a,paperAvailable});
  $('homeResults').innerHTML=homeHtml||'<div class="empty">No public-GTFS route home found in the search window.</div>';bindRouteButtons();
 }
 function bindRouteButtons(){document.querySelectorAll('.addNote').forEach(b=>b.addEventListener('click',()=>{try{pendingRoute=JSON.parse(b.dataset.route)}catch{pendingRoute=null}if(!pendingRoute)return;const a=currentAssignment(new Date($('workDate').value+'T12:00:00'));$('noteRouteLabel').textContent=`Job ${a.job} · ${pendingRoute.direction==='home'?'going home':'to work'} · first train ${pendingRoute.train}`;$('noteText').value='';$('noteModal').classList.remove('hidden');$('noteModal').setAttribute('aria-hidden','false')}))}
