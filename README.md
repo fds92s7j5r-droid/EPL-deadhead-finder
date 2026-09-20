@@ -1,21 +1,29 @@
-# Deadhead Finder Sandbox v3.0.4
+# Engineer Pay Log — Deadhead Finder Sandbox v3.1.0
 
-Early-AM / previous-night routing hotfix.
+## West Side Yard Terminal Reality Layer
 
-## Root cause
-The to-work graph only loaded GTFS service for the assignment's report date. That works for most jobs, but not for jobs reporting shortly after midnight. A Job 1 or Job 2 report around 12:35–12:40 AM may require a deadhead that departed on the previous calendar day.
+This build models two separate going-home clocks for West Side Yard jobs.
 
-## Fix
-- To-work routing now loads **previous day + work date** service together.
-- GTFS trips represented as 24:xx / 25:xx on the prior service day are shifted correctly into the work-date midnight hours.
-- The normal 8-hour latest-route search can now reach back into the previous evening.
-- Previous-night departures display the correct weekday label.
-- Route-specific Community Notes use the actual service day of the deadhead train.
-- Early-AM jobs show a testing message confirming that previous-calendar-day service is being searched.
-- West Side Yard / Jamaica Storage Yard access cutoffs from v3.0.3 remain unchanged.
-- Manual GTFS upload remains unchanged.
+### 1. Protected / paper-legal
+- Printed WSY release remains the Crew Book release.
+- Legal walking time from West Side Yard back to Penn is **20 minutes**.
+- Therefore a protected deadhead from Penn cannot begin before:
+  **printed release + 20 minutes**.
 
-## Good tests
-- Job 1: 12:35 AM Jamaica Storage Yard report. Legal deadhead must reach Jamaica by 12:15 AM, and the route may depart on the prior calendar day.
-- Job 2: 12:40 AM Jamaica Storage Yard report. Legal deadhead must reach Jamaica by 12:20 AM.
-- Compare a Monday early-AM job against Sunday-night service to make sure weekend/weekday crossover is handled correctly.
+### 2. Practical / real-world WSY intercept
+- EPL may surface a train that is known to **originate in West Side Yard**.
+- Its timetable Q stop is modeled as **15 minutes before the public Penn departure**.
+- If that Q stop falls from **15 minutes before the printed release up to 20 minutes after release**, EPL can show it as:
+  **POSSIBLE WSY INTERCEPT — NOT PROTECTED**.
+- This does not mean the train will wait. It is only a possible real-world connection.
+- A Community Deadhead Note can be attached to the route. In the future, repeated community confirmations can increase confidence without ever changing the paper-legal calculation.
+
+### Seeded research train
+- **Train 1902** is currently entered as a known WSY-origin train so the concept can be tested.
+- More WSY-origin trains should be added only when their origin/Q-stop relationship is certified.
+
+### Important
+- Protected and practical routing are intentionally separate.
+- A practical WSY intercept never becomes “legal” because of a note.
+- Other yard egress rules (JSY, Babylon Yard, Ronkonkoma Yard, Hillside) remain paused until certified.
+- Manual GTFS upload and all v3.0.4 routing behavior remain in place.

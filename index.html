@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>EPL Deadhead Finder — Sandbox v3.0.4.1</title>
+<title>EPL Deadhead Finder — Sandbox v3.1.0.1</title>
 <meta name="theme-color" content="#111827">
 <style>
 :root{color-scheme:light dark;--bg:#f3f4f6;--panel:#fff;--text:#111827;--muted:#6b7280;--line:#d1d5db;--accent:#2563eb;--good:#166534;--goodbg:#dcfce7;--warn:#92400e;--warnbg:#fef3c7;--tight:#9a3412;--tightbg:#ffedd5;--info:#1e40af;--infobg:#dbeafe;--purple:#6d28d9;--purplebg:#ede9fe;--bad:#991b1b;--badbg:#fee2e2;--shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -18,8 +18,8 @@
 <div class="wrap" id="app">
   <div class="hero">
     <div class="eyebrow">Engineer Pay Log · Deadhead Finder Research</div>
-    <h1>Deadhead Finder Sandbox v3.0.4</h1>
-    <p class="sub">Crew Book-connected routing for passenger jobs and relief crews + official public schedules + legal transfer rules + transfer-point intelligence + Community Deadhead Notes. E Stops and equipment-train hunting are intentionally out of scope for this build.</p>
+    <h1>Deadhead Finder Sandbox v3.1.0</h1>
+    <p class="sub">Crew Book-connected routing + protected terminal rules + practical terminal intelligence + Community Deadhead Notes. West Side Yard now separates the paper-legal trip home from possible real-world yard intercepts. E Stops remain out of scope.</p>
   </div>
 
   <section class="card">
@@ -88,7 +88,7 @@
     <div class="actions"><button class="btn secondary smallbtn" id="clearLocalNotes" type="button">Clear my test notes</button></div>
   </section>
 
-  <section class="card"><h2>What v3.0 is testing</h2><div class="source"><p><strong>Crew Book connection:</strong> the assignment picker now uses the same certified GO 202 Rev. 7 + Paper Rev. 8 passenger schedule data already used by Engineer Pay Log. Regular passenger assignments and passenger relief crews are available; Extra Crew-only jobs are intentionally omitted from the picker.</p><p><strong>Relief crews:</strong> selecting a relief crew resolves the covered assignment for the selected day before routing. A regular owner relief day does not make the assignment disappear — EPL still routes the job for the relief/extra engineer working it.</p><p><strong>Legal timing:</strong> every train-to-train transfer must be at least 5 minutes. A normal station report requires arrival at least 1 minute before report. West Side Yard requires Penn 20 minutes before report, Jamaica Storage Yard requires Jamaica 20 minutes before report, and Babylon Yard uses the known 35-minute station-to-yard allowance.</p><p><strong>Terminal rules still being filled in:</strong> when a yard/employee-location access allowance has not yet been certified, v3.0 shows the train path to the associated station but marks the access rule as pending instead of pretending the result is fully legal.</p><p><strong>Going home:</strong> every connected job can route from its printed release. Pre-release practical routing needs the final working-train arrival; that movement detail is currently certified only for Job 166 in this sandbox, so other jobs deliberately start at printed release.</p><p><strong>Transfer intelligence:</strong> direct rides and Jamaica transfers are preferred, Woodside is second, intermediate passenger stations are deprioritized, and employee/operational transfer locations are strongly deprioritized.</p><p><strong>Service-day crossover:</strong> assignment rules follow the report date. Early-AM reports also search the previous calendar day's GTFS service so a Sunday-night train can legally deadhead someone to a Monday 12:35 AM report. Going-home trips after midnight use the actual next calendar day service.</p></div></section>
+  <section class="card"><h2>What v3.0 is testing</h2><div class="source"><p><strong>Crew Book connection:</strong> the assignment picker now uses the same certified GO 202 Rev. 7 + Paper Rev. 8 passenger schedule data already used by Engineer Pay Log. Regular passenger assignments and passenger relief crews are available; Extra Crew-only jobs are intentionally omitted from the picker.</p><p><strong>Relief crews:</strong> selecting a relief crew resolves the covered assignment for the selected day before routing. A regular owner relief day does not make the assignment disappear — EPL still routes the job for the relief/extra engineer working it.</p><p><strong>Legal timing:</strong> every train-to-train transfer must be at least 5 minutes. A normal station report requires arrival at least 1 minute before report. West Side Yard requires Penn 20 minutes before report, Jamaica Storage Yard requires Jamaica 20 minutes before report, and Babylon Yard uses the known 35-minute station-to-yard allowance.</p><p><strong>Terminal reality layer:</strong> West Side Yard now has two separate going-home clocks. Paper legal = Penn 20 minutes after printed release. Practical = a known WSY-origin train may be shown as a possible yard intercept around release time using its timetable Q stop, but it is always labeled not protected unless community evidence later supports it.</p><p><strong>Terminal rules still being filled in:</strong> other yard/employee-location egress allowances remain pending until certified; EPL still prefers no answer over a confident wrong answer.</p><p><strong>Going home:</strong> every connected job can route from its printed release. Pre-release practical routing needs the final working-train arrival; that movement detail is currently certified only for Job 166 in this sandbox, so other jobs deliberately start at printed release.</p><p><strong>Transfer intelligence:</strong> direct rides and Jamaica transfers are preferred, Woodside is second, intermediate passenger stations are deprioritized, and employee/operational transfer locations are strongly deprioritized.</p><p><strong>Service-day crossover:</strong> assignment rules follow the report date. Early-AM reports also search the previous calendar day's GTFS service so a Sunday-night train can legally deadhead someone to a Monday 12:35 AM report. Going-home trips after midnight use the actual next calendar day service.</p></div></section>
 </div>
 
 <div id="noteModal" class="modalback hidden" aria-hidden="true">
@@ -113,6 +113,19 @@ const CREW_BOOK_JOBS={"1":{"terminal":"Jamaica Storage Yard","relief":["monday",
 const CREW_BOOK_RELIEF={"401":{"monday":"39","tuesday":"39","wednesday":"53","thursday":"53","friday":null,"saturday":null,"sunday":"34"},"402":{"monday":"6","tuesday":"6","wednesday":"17","thursday":null,"friday":null,"saturday":"10","sunday":"5"},"403":{"monday":"5","tuesday":"48","wednesday":"48","thursday":null,"friday":null,"saturday":"3","sunday":"3"},"404":{"monday":"8","tuesday":null,"wednesday":null,"thursday":"7","friday":"7","saturday":"13","sunday":"13"},"405":{"monday":"52","tuesday":null,"wednesday":null,"thursday":"9","friday":"11","saturday":"47","sunday":"47"},"406":{"monday":"40","tuesday":"40","wednesday":null,"thursday":null,"friday":"9","saturday":"349","sunday":"349"},"407":{"monday":"1","tuesday":"1","wednesday":"4","thursday":"4","friday":"12","saturday":null,"sunday":null},"420":{"monday":null,"tuesday":null,"wednesday":"265","thursday":"358","friday":"358","saturday":"275","sunday":"275"},"421":{"monday":null,"tuesday":"97","wednesday":"97","thursday":"247","friday":"247","saturday":"136","sunday":null},"424":{"monday":"300","tuesday":"300","wednesday":null,"thursday":null,"friday":"298","saturday":"132","sunday":"132"},"425":{"monday":"111","tuesday":"111","wednesday":"183","thursday":null,"friday":null,"saturday":"180","sunday":"180"},"426":{"monday":null,"tuesday":null,"wednesday":"182","thursday":"106","friday":"106","saturday":"326","sunday":"326"},"427":{"monday":null,"tuesday":null,"wednesday":"197","thursday":"196","friday":"196","saturday":"154","sunday":"154"},"430":{"monday":"241","tuesday":null,"wednesday":null,"thursday":"307","friday":"307","saturday":"93","sunday":"93"},"431":{"monday":"289","tuesday":null,"wednesday":null,"thursday":"291","friday":"291","saturday":"156","sunday":"289"},"432":{"monday":"316","tuesday":"125","wednesday":"125","thursday":"175","friday":null,"saturday":null,"sunday":"316"},"433":{"monday":"261","tuesday":"261","wednesday":"262","thursday":null,"friday":null,"saturday":"135","sunday":"135"},"435":{"monday":"104","tuesday":null,"wednesday":null,"thursday":"341","friday":"341","saturday":"128","sunday":"128"},"436":{"monday":"339","tuesday":"339","wednesday":null,"thursday":null,"friday":"342","saturday":"342","sunday":"98"},"437":{"monday":"353","tuesday":"353","wednesday":null,"thursday":null,"friday":"345","saturday":"94","sunday":"94"},"439":{"monday":"274","tuesday":"274","wednesday":null,"thursday":null,"friday":"231","saturday":"83","sunday":"83"},"442":{"monday":"177","tuesday":"177","wednesday":null,"thursday":null,"friday":"242","saturday":"243","sunday":"243"},"443":{"monday":"152","tuesday":"152","wednesday":null,"thursday":null,"friday":"153","saturday":"153","sunday":"155"},"444":{"monday":"293","tuesday":"293","wednesday":"179","thursday":null,"friday":null,"saturday":"178","sunday":"178"},"446":{"monday":"276","tuesday":"276","wednesday":null,"thursday":null,"friday":"311","saturday":"310","sunday":"310"},"448":{"monday":"325","tuesday":"325","wednesday":null,"thursday":null,"friday":"322","saturday":"322","sunday":"324"},"449":{"monday":"99","tuesday":"99","wednesday":null,"thursday":null,"friday":"175","saturday":"127","sunday":"127"},"450":{"monday":"98","tuesday":null,"wednesday":null,"thursday":"191","friday":"191","saturday":"82","sunday":"82"},"451":{"monday":null,"tuesday":"176","wednesday":"176","thursday":"318","friday":"318","saturday":"298","sunday":null},"456":{"monday":"344","tuesday":"344","wednesday":"321","thursday":null,"friday":null,"saturday":"317","sunday":"317"},"457":{"monday":"238","tuesday":"238","wednesday":"343","thursday":"343","friday":null,"saturday":null,"sunday":"239"},"458":{"monday":"227","tuesday":"85","wednesday":"85","thursday":null,"friday":null,"saturday":"88","sunday":"88"},"459":{"monday":"272","tuesday":"181","wednesday":"181","thursday":"179","friday":null,"saturday":null,"sunday":"272"},"460":{"monday":"100","tuesday":"320","wednesday":"320","thursday":null,"friday":null,"saturday":"86","sunday":"86"},"461":{"monday":"199","tuesday":"199","wednesday":"138","thursday":"103","friday":"103","saturday":null,"sunday":null},"462":{"monday":"294","tuesday":"168","wednesday":"168","thursday":null,"friday":null,"saturday":"158","sunday":"158"},"463":{"monday":"354","tuesday":"354","wednesday":"163","thursday":null,"friday":null,"saturday":"169","sunday":"169"},"465":{"monday":"273","tuesday":"107","wednesday":"107","thursday":"138","friday":null,"saturday":null,"sunday":"273"},"466":{"monday":"332","tuesday":"256","wednesday":"256","thursday":"345","friday":null,"saturday":null,"sunday":"332"},"467":{"monday":"324","tuesday":"157","wednesday":"157","thursday":null,"friday":null,"saturday":"159","sunday":"159"},"468":{"monday":"101","tuesday":"101","wednesday":"134","thursday":"134","friday":null,"saturday":null,"sunday":"96"},"469":{"monday":"328","tuesday":"328","wednesday":"356","thursday":"356","friday":null,"saturday":null,"sunday":"352"},"470":{"monday":"116","tuesday":"359","wednesday":"359","thursday":"113","friday":null,"saturday":null,"sunday":"116"},"471":{"monday":"234","tuesday":"234","wednesday":"166","thursday":"166","friday":null,"saturday":null,"sunday":"156"},"472":{"monday":"95","tuesday":"95","wednesday":"91","thursday":"91","friday":null,"saturday":null,"sunday":"87"},"473":{"monday":null,"tuesday":null,"wednesday":"115","thursday":"114","friday":"114","saturday":"233","sunday":"233"},"474":{"monday":"277","tuesday":null,"wednesday":null,"thursday":"200","friday":"200","saturday":"271","sunday":"271"},"475":{"monday":null,"tuesday":"108","wednesday":"108","thursday":"105","friday":"105","saturday":"352","sunday":null},"476":{"monday":null,"tuesday":null,"wednesday":"113","thursday":"117","friday":"117","saturday":"327","sunday":"327"}};
 const CREW_BOOK_DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const JOB166_MOVEMENT={weekday:{finalArrival:24*60+32,finalTrain:'275'},weekend:{finalArrival:24*60+35,finalTrain:'6275'}};
+// ---- Terminal Reality Layer v3.1 ----
+// Protected/paper rule for WSY going home: after the printed release, allow
+// 20 minutes to walk from West Side Yard back to Penn before a deadhead is legal.
+//
+// Practical layer: known WSY-origin trains can be surfaced as POSSIBLE yard
+// intercepts. Their timetable Q stop is 15 minutes before Penn departure.
+// A Q stop up to this many minutes before the printed release is considered a
+// research candidate only — never paper legal and never guaranteed.
+const WSY_PRACTICAL_EARLY_WINDOW=15;
+const WSY_ORIGIN_TRAIN_INTEL={
+  '1902':{qOffset:15,status:'CURATED',label:'Known WSY-origin train'}
+};
+
 const seedNotes=[
  {id:'seed-166-8702',job:'166',direction:'home',service:'weekend',workDays:['saturday','sunday'],station:'Grand Central',train:'8702',type:'regular',status:'EPL VERIFIED',title:'Known practical connection',text:'On the Saturday/Sunday Job 166 schedule, crews can routinely make 8702 even though it departs GCM at 12:37 AM before the printed 12:40 AM release. The final working train is scheduled in at 12:35 AM.',confirmations:1},
  {id:'seed-166-2702',job:'166',direction:'home',service:'weekday',station:'Grand Central',train:'2702',type:'regular',status:'EPL VERIFIED',title:'Known Job 166 connection',text:'2702 departs GCM at the printed 12:37 AM weekday release. The final working train is scheduled in at 12:32 AM, giving the full 5-minute window from the final working-train arrival.',confirmations:1}
@@ -408,6 +421,44 @@ function earliestRoute(rt,origin,dest,baseTime,initialGap,transferGap,deadline=b
   return earliestRoutes(rt,origin,dest,baseTime,initialGap,transferGap,deadline,1)[0]||null;
 }
 
+function wsyPracticalRoutes(rt,pennStop,destId,release,deadline=release+8*60,limit=4){
+  if(!pennStop||!destId)return[];
+  const out=[],seen=new Set();
+  // q = Penn departure - qOffset. Candidate window:
+  // release - earlyWindow <= q < release + 20.
+  // Once q is 20+ minutes after release, the engineer is paper-legal at Penn
+  // and the ordinary protected router handles the trip.
+  const minPenn=release-WSY_PRACTICAL_EARLY_WINDOW+15;
+  const maxPenn=release+20+15;
+  const starts=startEventsAt(rt,pennStop,minPenn,maxPenn);
+  for(const s of starts.slice(0,120)){
+    const train=String(s.meta?.trip_short_name||s.rawTripId||'');
+    const intel=WSY_ORIGIN_TRAIN_INTEL[train];
+    if(!intel)continue;
+    const qOffset=Number(intel.qOffset||15),qStop=s.dep-qOffset;
+    if(qStop<release-WSY_PRACTICAL_EARLY_WINDOW||qStop>=release+20)continue;
+    const r=dijkstraFromStarts(rt,[s],destId,5,deadline,true);
+    if(!r)continue;
+    const sig=physicalRouteSig(r);
+    if(seen.has(sig))continue;
+    seen.add(sig);
+    const clone={...r,depart:qStop,wsyIntercept:{
+      train,
+      qStop,
+      pennDepart:s.dep,
+      qOffset,
+      release,
+      minutesFromRelease:Math.round(qStop-release),
+      intel
+    }};
+    clone.preference=routeTransferPreference(clone);
+    clone.preferenceScore=clone.arrive+routePreferencePenalty(clone);
+    out.push(clone);
+  }
+  out.sort((a,b)=>(a.preferenceScore-b.preferenceScore)||(a.arrive-b.arrive)||(a.depart-b.depart));
+  return out.slice(0,limit);
+}
+
 function findStopIdByName(name){const norm=s=>String(s).toLowerCase().replace(/madison/g,'').replace(/station/g,'').replace(/\s+/g,' ').trim();const n=norm(name);let exact=null,partial=null;for(const [id,s] of data.stops){const sn=norm(s.stop_name);if(sn===n){exact=id;break}if(sn.includes(n)||n.includes(sn))partial=partial||id}return exact||partial}
 function stopName(id){return data.stops.get(id)?.stop_name||id}
 
@@ -416,13 +467,30 @@ function reportAccessRule(location){
   const n=String(location||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
   if(n==='grand central madison'||n==='grand central')return {routeStation:'Grand Central',minutes:1,label:'1-minute report buffer',special:false,homePaused:false,certified:true};
   if(n==='brooklyn'||n==='atlantic terminal')return {routeStation:'Atlantic Terminal',minutes:1,label:'1-minute report buffer',special:false,homePaused:false,certified:true};
-  if(n==='west side yard'||n==='wsy')return {routeStation:'Penn Station',minutes:20,label:'20-minute walk Penn → West Side Yard',special:true,homePaused:true,certified:true};
+  if(n==='west side yard'||n==='wsy')return {routeStation:'Penn Station',minutes:20,label:'20-minute walk Penn → West Side Yard',special:true,homePaused:false,certified:true};
   if(n==='jamaica storage yard'||n==='jsy')return {routeStation:'Jamaica',minutes:20,label:'20-minute walk Jamaica → Jamaica Storage Yard',special:true,homePaused:true,certified:true};
   if(n==='babylon yard')return {routeStation:'Babylon',minutes:35,label:'35-minute Babylon Station → Babylon Yard allowance',special:true,homePaused:true,certified:true};
   if(n==='ronkonkoma yard')return {routeStation:'Ronkonkoma',minutes:1,label:'Ronkonkoma Yard access allowance not yet certified',special:true,homePaused:true,certified:false};
   if(n==='hillside'||n==='hillside facility')return {routeStation:'Hillside Facility',minutes:1,label:'Hillside access allowance not yet certified',special:true,homePaused:true,certified:false};
   return {routeStation:location,minutes:1,label:'1-minute report buffer',special:false,homePaused:false,certified:true};
 }
+function terminalHomeRule(a){
+  const n=String(a?.operationalTerminal||a?.workStation||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  if(n==='west side yard'||n==='wsy')return {
+    routeStation:'Penn Station',
+    paperMinutes:20,
+    paused:false,
+    certified:true,
+    practicalMode:'wsy_intercept',
+    label:'Paper legal: available at Penn 20 minutes after printed WSY release'
+  };
+  if(n==='jamaica storage yard'||n==='jsy')return {routeStation:'Jamaica',paperMinutes:0,paused:true,certified:false,label:'Jamaica Storage Yard egress rule pending'};
+  if(n==='babylon yard')return {routeStation:'Babylon',paperMinutes:0,paused:true,certified:false,label:'Babylon Yard egress rule pending'};
+  if(n==='ronkonkoma yard')return {routeStation:'Ronkonkoma',paperMinutes:0,paused:true,certified:false,label:'Ronkonkoma Yard egress rule pending'};
+  if(n==='hillside'||n==='hillside facility')return {routeStation:'Hillside Facility',paperMinutes:0,paused:true,certified:false,label:'Hillside egress rule pending'};
+  return {routeStation:a?.workStation||a?.operationalTerminal||'',paperMinutes:0,paused:false,certified:true,practicalMode:null,label:'Released at passenger terminal'};
+}
+
 function assignmentAccessRule(a){
   // Access legality follows the assignment's operational terminal, not merely
   // a day-specific report-location override. Example: Job 113 can report Penn
@@ -479,15 +547,32 @@ function buildLocationSnapshot(date,a,station,rt,rtHome,work,reportDeadline){
   const origin=findStopIdByName(station);if(!origin)return {station,error:'Station not available in loaded GTFS'};
   const legalCandidate=latestRoutes(rt,origin,work,reportDeadline,5,8*60,3).find(r=>protectedToWorkRoute(r,reportDeadline))||null;
   const legalIn=legalCandidate;
-  if(assignmentAccessRule(a).homePaused)return {station,legalIn,homePaused:true};
-  const legalHome=earliestRoutes(rtHome,work,origin,a.release,0,5,a.release+8*60,6)[0]||null;
-  const practicalHome=$('showPractical').checked&&a.canPractical&&a.finalArrival!=null?earliestRoute(rtHome,work,origin,a.finalArrival,1,1,a.finalArrival+8*60):null;
+  const egress=terminalHomeRule(a);
+  if(egress.paused)return {station,legalIn,homePaused:true,homeRule:egress};
+  const homeStart=findStopIdByName(egress.routeStation);
+  if(!homeStart)return {station,legalIn,error:`Could not match ${egress.routeStation} in loaded GTFS`};
+  const paperAvailable=a.release+(egress.paperMinutes||0);
+  const legalHome=earliestRoutes(rtHome,homeStart,origin,paperAvailable,0,5,paperAvailable+8*60,6)[0]||null;
+
+  let practicalHome=null;
+  if($('showPractical').checked&&egress.practicalMode==='wsy_intercept'){
+    practicalHome=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,1)[0]||null;
+  }else if($('showPractical').checked&&a.canPractical&&a.finalArrival!=null){
+    practicalHome=earliestRoute(rtHome,homeStart,origin,a.finalArrival,1,1,a.finalArrival+8*60);
+  }
+
   let promoted=false,chosenHome=legalHome,chosenKind='legal';
   if(practicalHome){
-    const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome),gap=Math.round(practicalHome.depart-a.finalArrival),before=practicalHome.depart<a.release,cls=routeClass(practicalHome,gap,before),notes=notesFor(a,date,practicalHome,'home'),verified=notes.some(n=>n.status?.includes('VERIFIED')),show=!same&&(before||cls.key!=='legal'),savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;
-    promoted=!!(show&&verified&&(!legalHome||savings>=30));if(promoted){chosenHome=practicalHome;chosenKind='verified practical'}
+    const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome);
+    const notes=notesFor(a,date,practicalHome,'home');
+    const verified=notes.some(n=>n.status?.includes('VERIFIED'));
+    const savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;
+    const show=!same;
+    promoted=!!(show&&verified&&(!legalHome||savings>=30));
+    if(promoted){chosenHome=practicalHome;chosenKind='verified practical'}
+    else if(!legalHome){chosenHome=practicalHome;chosenKind='possible practical'}
   }
-  return {station,legalIn,legalHome,practicalHome,chosenHome,chosenKind,promoted};
+  return {station,legalIn,legalHome,practicalHome,chosenHome,chosenKind,promoted,homeRule:egress,paperAvailable};
 }
 function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   const demoNotice=data?.isDemo?'<div class="status" style="margin:0 0 10px"><span class="dot"></span><span><strong>Demo schedule loaded.</strong> Babylon can calculate from the built-in sample. Ronkonkoma, Hicksville, Patchogue, and other locations will populate after the full GTFS is loaded.</span></div>':'';
@@ -497,7 +582,7 @@ function renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline){
   root.innerHTML=rows.map((x,i)=>{const active=$('homeStation').value===x.station;if(x.error)return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${escapeHtml(x.error)}</small></div><button type="button" class="btn secondary smallbtn compareView" data-station="${escapeHtml(x.station)}">View</button></div></div>`;
     const access=assignmentAccessRule(a);
     const to=x.legalIn?`<div class="compareMain">Leave ${fmtTime(x.legalIn.depart)}</div><div class="compareSub">arrive ${fmtTime(x.legalIn.arrive)} · ${Math.round(a.report-x.legalIn.arrive)} min before report${access.minutes>1?` · ${escapeHtml(access.routeStation)} deadline ${fmtTime(reportDeadline)}`:''} · ${escapeHtml(summarizeTransfers(x.legalIn))}</div>`:`<div class="compareMain">No legal route found</div><div class="compareSub">${access.minutes>1?`Must reach ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} (${access.minutes} min before report).`:`Must arrive before the report deadline.`}</div>`;
-    let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome)home=`<div class="compareMain ${x.promoted?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${x.promoted?'Verified practical recommendation':'Protected route'} · leave ${fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>`;else home='<div class="compareMain">No route found</div>';
+    let home;if(x.homePaused)home='<div class="compareMain">Yard egress rule pending</div>';else if(x.chosenHome){const practicalOnly=x.chosenKind==='possible practical';const label=x.promoted?'Verified practical recommendation':(practicalOnly?'Possible WSY intercept · not protected':'Protected route');home=`<div class="compareMain ${(x.promoted||practicalOnly)?'comparePractical':''}">Arrive ${fmtTime(x.chosenHome.arrive)}</div><div class="compareSub">${label} · ${x.chosenHome.wsyIntercept?'WSY Q '+fmtTime(x.chosenHome.wsyIntercept.qStop):'leave '+fmtTime(x.chosenHome.depart)} · ${escapeHtml(summarizeTransfers(x.chosenHome))}</div>`}else home='<div class="compareMain">No route found</div>';
     return `<div class="compareRow"><div class="compareTop"><div class="compareStation">#${i+1} ${escapeHtml(x.station)}<small>${i===0?'First-choice location':`Preference ${i+1}`}${active?' · viewing details':''}</small></div><button type="button" class="btn ${active?'primary':'secondary'} smallbtn compareView" data-station="${escapeHtml(x.station)}">${active?'Viewing':'View details'}</button></div><div class="compareCols"><div class="compareCell"><b>TO WORK</b>${to}</div><div class="compareCell"><b>GOING HOME</b>${home}</div></div></div>`;
   }).join('');
   root.querySelectorAll('.compareView').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.station;if([...$('homeStation').options].some(o=>o.value===name)){$('homeStation').value=name;render()}}));
@@ -506,9 +591,10 @@ function routeClass(r,initialGap=null,preRelease=false){const gs=[...r.gaps.map(
 function notesFor(a,date,r,direction){if(!$('useCommunity').checked||!r?.legs?.length)return[];const train=String(r.legs[0].train),svc=routeServiceType(date,r);return [...seedNotes,...loadLocalNotes()].filter(n=>n.job===a.job&&n.direction===direction&&String(n.train)===train&&(!n.service||n.service===svc)&&(!Array.isArray(n.workDays)||n.workDays.includes(crewBookDay(date))))}
 function noteMarkup(notes){if(!notes.length)return'';return notes.map(n=>`<div class="intel"><strong>${escapeHtml(n.status||'COMMUNITY NOTE')} · ${escapeHtml(n.title||'Deadhead note')}</strong>${escapeHtml(n.text)}<div class="meta">${n.confirmations?`${n.confirmations} confirmation${n.confirmations===1?'':'s'} · `:''}${n.service?`${n.service==='weekday'?'Mon–Fri':'Sat–Sun'} · `:''}${n.job?`Job ${escapeHtml(n.job)}`:''}</div></div>`).join('')}
 function routeSig(r){return r?.legs?.map(x=>x.train).join('>')||''}
-function renderRoute(r,opt){if(!r)return'<div class="empty">No route found.</div>';const cls=opt.class,notes=opt.notes||[],pref=routeTransferPreference(r);let badges=`<span class="badge ${cls.key}">${cls.label}</span>`;if(pref.tier===0&&r.gaps.length)badges+=`<span class="badge legal">JAMAICA HUB</span>`;else if(pref.tier===1)badges+=`<span class="badge verified">WOODSIDE HUB</span>`;else if(pref.tier===2)badges+=`<span class="badge short">INTERMEDIATE</span>`;else if(pref.tier===3)badges+=`<span class="badge tight">OPERATIONAL</span>`;if(notes.some(n=>(n.status||'').includes('VERIFIED')))badges+=`<span class="badge verified">VERIFIED INTEL</span>`;if(opt.access&&opt.access.certified===false)badges+=`<span class="badge short">ACCESS RULE NEEDED</span>`;let html=`<div class="result"><div class="resulthead"><div class="resulttitle">${escapeHtml(opt.title)}</div><div class="badges">${badges}</div></div><div class="route">`;
+function renderRoute(r,opt){if(!r)return'<div class="empty">No route found.</div>';const cls=opt.class,notes=opt.notes||[],pref=routeTransferPreference(r);let badges=`<span class="badge ${cls.key}">${cls.label}</span>`;if(r.wsyIntercept)badges+=`<span class="badge tight">WSY ORIGIN</span>`;if(pref.tier===0&&r.gaps.length)badges+=`<span class="badge legal">JAMAICA HUB</span>`;else if(pref.tier===1)badges+=`<span class="badge verified">WOODSIDE HUB</span>`;else if(pref.tier===2)badges+=`<span class="badge short">INTERMEDIATE</span>`;else if(pref.tier===3)badges+=`<span class="badge tight">OPERATIONAL</span>`;if(notes.some(n=>(n.status||'').includes('VERIFIED')))badges+=`<span class="badge verified">VERIFIED INTEL</span>`;if(opt.access&&opt.access.certified===false)badges+=`<span class="badge short">ACCESS RULE NEEDED</span>`;let html=`<div class="result"><div class="resulthead"><div class="resulttitle">${escapeHtml(opt.title)}</div><div class="badges">${badges}</div></div><div class="route">`;
+ if(r.wsyIntercept){const wi=r.wsyIntercept;html+=`<div class="leg"><div class="train">#${escapeHtml(wi.train)}</div><div class="place">West Side Yard<small>timetable Q stop · possible boarding only</small></div><div class="time">${fmtTime(wi.qStop)}<small style="display:block;color:var(--muted);font-weight:600">Penn dep ${fmtTime(wi.pennDepart)}</small></div></div>`}
  r.legs.forEach((leg,i)=>{html+=`<div class="leg"><div class="train">#${escapeHtml(leg.train)}</div><div class="place">${escapeHtml(stopName(leg.from))}<small>to ${escapeHtml(stopName(leg.to))}</small></div><div class="time">${fmtTime(leg.dep)}<small style="display:block;color:var(--muted);font-weight:600">→ ${fmtTime(leg.arr)}</small></div></div>`;if(i<r.gaps.length){const g=r.gaps[i],c=g.minutes>=5?'legal':g.minutes===4?'short':'tight';html+=`<div class="transfer ${c}">${g.minutes} min transfer at ${escapeHtml(stopName(g.stopId))} · ${g.minutes>=5?'legal':g.minutes===4?'short / not protected':'tight / possible'}</div>`}});
- html+='</div>';const p=[];if(opt.initialGap!=null)p.push(`${opt.initialGap} min from final working-train arrival to first deadhead`);if(opt.beforeRelease)p.push(`departs ${Math.round(opt.assignment.release-r.depart)} min before printed release`);if(opt.reportTime!=null){const margin=Math.round(opt.reportTime-r.arrive);const accessMin=opt.access?.minutes??1;p.push(`${margin} min before report`);if(accessMin>1)p.push(`${Math.round((opt.reportDeadline??opt.reportTime)-r.arrive)} min before ${opt.access.routeStation} access deadline`);else if(margin===1&&opt.access?.certified!==false)p.push('meets 1-minute report rule exactly');if(opt.access?.certified===false)p.push(opt.access.label)}p.push(`Depart ${fmtTime(r.depart)}`);p.push(`arrive ${fmtTime(r.arrive)}`);
+ html+='</div>';const p=[];if(r.wsyIntercept){const wi=r.wsyIntercept,delta=wi.minutesFromRelease;p.push(`WSY timetable Q stop ${Math.abs(delta)} min ${delta<0?'before':delta>0?'after':'at'} printed release`);p.push(`Penn departure ${fmtTime(wi.pennDepart)}`);if(opt.paperAvailable!=null)p.push(`paper-legal Penn availability ${fmtTime(opt.paperAvailable)}`);p.push('possible only · not protected · train may leave the yard before you get there')}if(opt.initialGap!=null)p.push(`${opt.initialGap} min from final working-train arrival to first deadhead`);if(opt.beforeRelease)p.push(`departs ${Math.round(opt.assignment.release-r.depart)} min before printed release`);if(opt.reportTime!=null){const margin=Math.round(opt.reportTime-r.arrive);const accessMin=opt.access?.minutes??1;p.push(`${margin} min before report`);if(accessMin>1)p.push(`${Math.round((opt.reportDeadline??opt.reportTime)-r.arrive)} min before ${opt.access.routeStation} access deadline`);else if(margin===1&&opt.access?.certified!==false)p.push('meets 1-minute report rule exactly');if(opt.access?.certified===false)p.push(opt.access.label)}p.push(`Depart ${fmtTime(r.depart)}`);p.push(`arrive ${fmtTime(r.arrive)}`);
  if(pref.tier>=2){const names=pref.details.filter(x=>x.tier>=2).map(x=>stopName(x.stopId));p.push(`${pref.label}${names.length?`: ${names.join(', ')}`:''}`)}
  else if(pref.tier===1)p.push('Woodside used as secondary transfer hub');
  else if(pref.tier===0&&r.gaps.length)p.push('Jamaica preferred transfer hub');
@@ -546,13 +632,19 @@ function render(){
  if(access.certified===false)messages.push(`<strong>Terminal access rule still needed.</strong> Train routing is shown to ${escapeHtml(access.routeStation)}, but ${escapeHtml(access.label)}. Do not treat the station-arrival deadline as fully protected yet.`);
  else if(access.minutes>1)messages.push(`<strong>${escapeHtml(a.operationalTerminal||a.workStation)} legal-arrival rule:</strong> your deadhead train must arrive at ${escapeHtml(access.routeStation)} by ${fmtTime(reportDeadline)} — ${access.minutes} minutes before the ${fmtTime(a.report)} report. A later arrival is not legal even if the Crew Book's day-specific report location is ${escapeHtml(a.workStation)} or you can physically make the report.`);
  if(a.report<6*60)messages.push(`<strong>Early-AM report:</strong> Deadhead Finder is searching both the work date and the previous calendar day's GTFS service, including prior-service-day trips whose times continue past midnight.`);
- if(!a.canPractical&&a.selectionType!=='custom')messages.push(`<strong>Movement detail not modeled yet.</strong> Going-home routes start at the printed ${fmtTime(a.release)} release. Pre-release practical options stay off until EPL knows the final working-train arrival for Job ${escapeHtml(a.job)}.`);
+ const hr=terminalHomeRule(a);
+ if(hr.practicalMode==='wsy_intercept')messages.push(`<strong>West Side Yard going-home model:</strong> paper legal = Penn ${hr.paperMinutes} minutes after the printed ${fmtTime(a.release)} release. EPL may also surface a known WSY-origin train as a possible yard intercept when its timetable Q stop falls near release. That option is never protected or guaranteed.`);
+ else if(!a.canPractical&&a.selectionType!=='custom')messages.push(`<strong>Movement detail not modeled yet.</strong> Going-home routes start at the printed ${fmtTime(a.release)} release. Pre-release practical options stay off until EPL knows the final working-train arrival for Job ${escapeHtml(a.job)}.`);
  if(messages.length){assignmentStatus.classList.remove('hidden');assignmentStatus.innerHTML=`<span class="dot"></span><span>${messages.join('<br><br>')}</span>`}else{assignmentStatus.classList.add('hidden');assignmentStatus.innerHTML=''}
 
  const previousNightNote=a.report<6*60?' Previous-calendar-day service is included for this early-AM report.':'';
  $('toWorkNote').textContent=(access.certified!==false?`${home} → ${a.workStation} · report ${fmtTime(a.report)}; must reach ${access.routeStation} by ${fmtTime(reportDeadline)} (${access.label}).`:`${home} → ${a.workStation} · report ${fmtTime(a.report)}; routing is shown to ${access.routeStation}, but the terminal-access allowance is not yet certified.`)+previousNightNote;
- const homeBase=a.finalArrival??a.release,homeDate=actualDateForMinutes(date,homeBase),crossesDay=homeDate.toDateString()!==date.toDateString();
- $('homeNote').textContent=a.finalArrival!=null?`${a.workStation} → ${home} · final working train arrives ${fmtTime(a.finalArrival)}; printed release is ${fmtTime(a.release)}.${crossesDay?` Home deadhead operates on ${dayName(homeDate)} service.`:''}`:`${a.workStation} → ${home} · printed release ${fmtTime(a.release)}. Pre-release practical routing is not enabled for this assignment yet.${crossesDay?` Home deadhead operates on ${dayName(homeDate)} service.`:''}`;
+ const homeRule=terminalHomeRule(a),homeBase=a.finalArrival??a.release,homeDate=actualDateForMinutes(date,homeBase),crossesDay=homeDate.toDateString()!==date.toDateString();
+ if(homeRule.practicalMode==='wsy_intercept'){
+   $('homeNote').textContent=`${a.operationalTerminal||a.workStation} → ${home} · printed release ${fmtTime(a.release)}. Paper legal: reach Penn at ${fmtTime(a.release+homeRule.paperMinutes)}. Practical layer may also show known WSY-origin trains whose timetable Q stop falls near release; those are possible, never guaranteed.${crossesDay?` Home deadhead operates on ${dayName(homeDate)} service.`:''}`;
+ }else{
+   $('homeNote').textContent=a.finalArrival!=null?`${a.workStation} → ${home} · final working train arrives ${fmtTime(a.finalArrival)}; printed release is ${fmtTime(a.release)}.${crossesDay?` Home deadhead operates on ${dayName(homeDate)} service.`:''}`:`${a.workStation} → ${home} · printed release ${fmtTime(a.release)}. Pre-release practical routing is not enabled for this assignment yet.${crossesDay?` Home deadhead operates on ${dayName(homeDate)} service.`:''}`;
+ }
  renderNotesPanel(a,date);
 
  const origin=findStopIdByName(home),work=findStopIdByName(access.routeStation);if(!origin||!work){$('priorityComparison').innerHTML='<div class="empty">Load the full GTFS to compare your saved deadhead locations.</div>';$('toWorkResults').innerHTML=`<div class="empty">Could not match ${escapeHtml(access.routeStation)} or ${escapeHtml(home)} in the loaded GTFS. Load the full feed or choose another station.</div>`;$('homeResults').innerHTML='';bindRouteButtons();return}
@@ -565,16 +657,28 @@ function render(){
 
  const rtHome=buildRuntime(date,[0,1]);
  renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline);
- if(access.homePaused){$('homeResults').innerHTML=`<div class="empty">Going-home routing from ${escapeHtml(a.workStation)} is intentionally paused in v3.0. The report-side station relationship is known, but the release-side egress allowance for this terminal still needs to be modeled.</div>`;bindRouteButtons();return}
- const legalHomes=earliestRoutes(rtHome,work,origin,a.release,0,5,a.release+8*60,6),legalHome=legalHomes[0]||null;
- const rawFastestHome=(()=>{const starts=startEventsAt(rtHome,work,a.release,a.release+8*60),cands=[],seen=new Set();for(const s of starts.slice(0,160)){const r=dijkstraFromStarts(rtHome,[s],origin,5,a.release+8*60,false);if(!r)continue;const sig=physicalRouteSig(r);if(seen.has(sig))continue;seen.add(sig);cands.push(r)}cands.sort((a,b)=>(a.arrive-b.arrive)||(a.depart-b.depart));return cands[0]||null})();
- const practicalHome=$('showPractical').checked&&a.canPractical&&a.finalArrival!=null?earliestRoute(rtHome,work,origin,a.finalArrival,1,1,a.finalArrival+8*60):null;let homeHtml='';
- const practicalMeta=(()=>{if(!practicalHome)return null;const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome),gap=Math.round(practicalHome.depart-a.finalArrival),before=practicalHome.depart<a.release,cls=routeClass(practicalHome,gap,before),notes=notesFor(a,date,practicalHome,'home'),verified=notes.some(n=>n.status?.includes('VERIFIED')),show=!same&&(before||cls.key!=='legal'),savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;return {same,gap,before,cls,notes,verified,show,savings};})();
+ const egress=terminalHomeRule(a);
+ if(egress.paused){$('homeResults').innerHTML=`<div class="empty">Going-home routing from ${escapeHtml(a.operationalTerminal||a.workStation)} is intentionally paused. ${escapeHtml(egress.label)}.</div>`;bindRouteButtons();return}
+ const homeStart=findStopIdByName(egress.routeStation);
+ if(!homeStart){$('homeResults').innerHTML=`<div class="empty">Could not match ${escapeHtml(egress.routeStation)} in the loaded GTFS.</div>`;bindRouteButtons();return}
+ const paperAvailable=a.release+(egress.paperMinutes||0);
+ const legalHomes=earliestRoutes(rtHome,homeStart,origin,paperAvailable,0,5,paperAvailable+8*60,6),legalHome=legalHomes[0]||null;
+ const rawFastestHome=(()=>{const starts=startEventsAt(rtHome,homeStart,paperAvailable,paperAvailable+8*60),cands=[],seen=new Set();for(const s of starts.slice(0,160)){const r=dijkstraFromStarts(rtHome,[s],origin,5,paperAvailable+8*60,false);if(!r)continue;const sig=physicalRouteSig(r);if(seen.has(sig))continue;seen.add(sig);cands.push(r)}cands.sort((a,b)=>(a.arrive-b.arrive)||(a.depart-b.depart));return cands[0]||null})();
+
+ let practicalHome=null;
+ if($('showPractical').checked&&egress.practicalMode==='wsy_intercept'){
+   practicalHome=wsyPracticalRoutes(rtHome,homeStart,origin,a.release,a.release+8*60,1)[0]||null;
+ }else if($('showPractical').checked&&a.canPractical&&a.finalArrival!=null){
+   practicalHome=earliestRoute(rtHome,homeStart,origin,a.finalArrival,1,1,a.finalArrival+8*60);
+ }
+ let homeHtml='';
+ const practicalMeta=(()=>{if(!practicalHome)return null;const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome),notes=notesFor(a,date,practicalHome,'home'),verified=notes.some(n=>n.status?.includes('VERIFIED')),show=!same,savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;return {same,notes,verified,show,savings};})();
  const promoteVerifiedPractical=!!(practicalMeta?.show&&practicalMeta.verified&&(!legalHome||practicalMeta.savings>=30));
- if(promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:'Recommended practical route',class:practicalMeta.cls,notes:practicalMeta.notes,direction:'home',assignment:a,initialGap:practicalMeta.gap,beforeRelease:practicalMeta.before});
- if(legalHome)homeHtml+=renderRoute(legalHome,{title:promoteVerifiedPractical?'Fully protected alternative':'Preferred legal route home',class:routeClass(legalHome),notes:notesFor(a,date,legalHome,'home'),direction:'home',assignment:a});
- if(rawFastestHome&&legalHome&&physicalRouteSig(rawFastestHome)!==physicalRouteSig(legalHome)&&rawFastestHome.arrive+10<=legalHome.arrive)homeHtml+=renderRoute(rawFastestHome,{title:promoteVerifiedPractical?'Faster protected alternate':'Faster legal alternate',class:routeClass(rawFastestHome),notes:notesFor(a,date,rawFastestHome,'home'),direction:'home',assignment:a});
- if(practicalMeta?.show&&!promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:practicalMeta.verified?'Verified practical option':'Faster practical option',class:practicalMeta.cls,notes:practicalMeta.notes,direction:'home',assignment:a,initialGap:practicalMeta.gap,beforeRelease:practicalMeta.before});
+ const practicalClass=practicalHome?.wsyIntercept?{key:'tight',label:'POSSIBLE WSY INTERCEPT'}:routeClass(practicalHome,practicalHome&&a.finalArrival!=null?Math.round(practicalHome.depart-a.finalArrival):null,!!(practicalHome&&practicalHome.depart<a.release));
+ if(promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:'Recommended practical route',class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
+ if(legalHome)homeHtml+=renderRoute(legalHome,{title:promoteVerifiedPractical?'Fully protected alternative':'Preferred protected route home',class:routeClass(legalHome),notes:notesFor(a,date,legalHome,'home'),direction:'home',assignment:a,paperAvailable});
+ if(rawFastestHome&&legalHome&&physicalRouteSig(rawFastestHome)!==physicalRouteSig(legalHome)&&rawFastestHome.arrive+10<=legalHome.arrive)homeHtml+=renderRoute(rawFastestHome,{title:promoteVerifiedPractical?'Faster protected alternate':'Faster protected alternate',class:routeClass(rawFastestHome),notes:notesFor(a,date,rawFastestHome,'home'),direction:'home',assignment:a,paperAvailable});
+ if(practicalMeta?.show&&!promoteVerifiedPractical)homeHtml+=renderRoute(practicalHome,{title:practicalHome.wsyIntercept?'Possible West Side Yard intercept':(practicalMeta.verified?'Verified practical option':'Faster practical option'),class:practicalClass,notes:practicalMeta.notes,direction:'home',assignment:a,paperAvailable});
  $('homeResults').innerHTML=homeHtml||'<div class="empty">No public-GTFS route home found in the search window.</div>';bindRouteButtons();
 }
 function bindRouteButtons(){document.querySelectorAll('.addNote').forEach(b=>b.addEventListener('click',()=>{try{pendingRoute=JSON.parse(b.dataset.route)}catch{pendingRoute=null}if(!pendingRoute)return;const a=currentAssignment(new Date($('workDate').value+'T12:00:00'));$('noteRouteLabel').textContent=`Job ${a.job} · ${pendingRoute.direction==='home'?'going home':'to work'} · first train ${pendingRoute.train}`;$('noteText').value='';$('noteModal').classList.remove('hidden');$('noteModal').setAttribute('aria-hidden','false')}))}
