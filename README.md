@@ -1,42 +1,48 @@
-# Engineer Pay Log — Deadhead Finder Sandbox v3.3.0
+# Engineer Pay Log — Deadhead Finder Sandbox v3.4.0
 
-## Jamaica Storage Yard + Bolands Landing test build
+## Home Origin Resolver + LIC/Hunterspoint
 
-### Protected JSY rule
-- To work: must reach Jamaica 20 minutes before JSY report.
-- Going home: paper-legal at Jamaica 20 minutes after printed JSY release.
-- Bolands Landing never changes the written legal calculation.
+The architectural change in this build is that **report location and home origin are now separate**.
 
-### Practical JSY-origin candidates
-EPL may surface a **likely JSY-origin** diesel train when:
-- its GTFS trip begins at Jamaica,
-- it is in the LIRR diesel passenger train-number families (1–99, 500–699),
-- and its scheduled Jamaica departure is within ±10 minutes of printed JSY release.
+### First proof case: Job 7, weekday
+- Reports: Jamaica Storage Yard
+- To work: Jamaica 20 minutes before report
+- Final working train: Train 13
+- Train 13 arrives Long Island City: 2:56 PM
+- Going home: Long Island City, not JSY
+- Five minutes from physical availability is paper legal at LIC
+- S/E stops are guaranteed
+- Q stops are extremely high-confidence
+- Under-five-minute LIC connections may be shown as practical but never protected
 
-This is an inference, not a Crew Book origin marker, so the route remains NOT PROTECTED.
+### Curated LIC / HPT origins
+62 E 8:37 AM
+512 Q 8:42 AM
+5214 E 9:54 AM → Jamaica E 10:15 AM
+8 E 11:18 AM
+10 E 11:18 AM
+656 S 3:15 PM → HPT 3:30 PM
+558 Q 3:42 PM → HPT 3:57 PM
+658 Q 4:07 PM → HPT 4:22 PM
+18 Q 4:16 PM → HPT 4:30 PM
+80 S 4:27 PM → HPT 4:42 PM
+662 S 4:58 PM → HPT 5:07 PM
+698 S 5:43 PM → HPT 5:58 PM
+568 S 6:40 PM → HPT 6:53 PM
 
-### Bolands Landing
-Default walking estimate: **~7 minutes from JSY**.
+### Train 8 / Train 10 special calendar
+Train 8 runs Monday–Friday except:
+- Fridays 2026-05-28 through 2027-09-03
+- Thursday 2027-06-17
+- Thursday 2027-07-01
 
-Timing hierarchy:
-1. Curated scheduled Bolands E-stop
-2. East New York + 5 minutes
-3. Atlantic Terminal + 16 minutes when ENY is skipped
+Train 10 runs on those exception Fridays and those two Thursdays.
 
-Curated weekday E-stops:
-- 2800 — 12:18 AM
-- 1710 — 7:53 AM
-- 2904 — 3:15 PM
-- 2906 — 3:35 PM
-- 1756 — 3:58 PM
-- 2910 — 4:17 PM
-- 2918 — 4:51 PM
-- 772 — 6:55 PM
+### Tiny test
+Try **Job 7 — Monday Sep. 21 — Ronkonkoma**.
 
-A scheduled E-stop is operationally certain (the train must stop), but using Bolands for JSY access/egress is still not protected because the written rule is Jamaica ±20 only.
-
-### Suggested tiny test
-1. **Job 3, Monday Sep. 21** — confirm protected going-home routing does not begin before **9:41 AM Jamaica** after the 9:21 release.
-2. **Job 7, Monday Sep. 21** — look for the **1756 scheduled Bolands E-stop at 3:58 PM** around the 4:06 PM release. EPL should explicitly show the ~7-minute walk and that this would require being physically clear before the printed release.
-
-The v3.2.1 GTFS IndexedDB cache behavior is unchanged.
+Expected:
+1. To-work side still uses JSY / Jamaica −20.
+2. Going-home header says **Long Island City** and references Train 13 at **2:56 PM**.
+3. JSY +20 and Bolands disappear from the home side.
+4. Curated LIC-origin trains can participate in the route.
