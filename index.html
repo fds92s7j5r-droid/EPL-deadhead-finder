@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>EPL Deadhead Finder — Sandbox v3.4.0</title>
+<title>EPL Deadhead Finder — Sandbox v3.4.1</title>
 <meta name="theme-color" content="#111827">
 <style>
 :root{color-scheme:light dark;--bg:#f3f4f6;--panel:#fff;--text:#111827;--muted:#6b7280;--line:#d1d5db;--accent:#2563eb;--good:#166534;--goodbg:#dcfce7;--warn:#92400e;--warnbg:#fef3c7;--tight:#9a3412;--tightbg:#ffedd5;--info:#1e40af;--infobg:#dbeafe;--purple:#6d28d9;--purplebg:#ede9fe;--bad:#991b1b;--badbg:#fee2e2;--shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -18,8 +18,8 @@
 <div class="wrap" id="app">
   <div class="hero">
     <div class="eyebrow">Engineer Pay Log · Deadhead Finder Research</div>
-    <h1>Deadhead Finder Sandbox v3.4.0</h1>
-    <p class="sub">Crew Book-connected routing + protected terminal rules + West Side Yard intelligence + the first Jamaica Storage Yard / Bolands Landing practical-routing layer. Community Deadhead Notes remain separate from legal calculations.</p>
+    <h1>Deadhead Finder Sandbox v3.4.1</h1>
+    <p class="sub">Crew Book-connected routing + protected terminal rules + Home Origin Resolver + LIC/Hunterspoint intelligence + West Side Yard and Jamaica Storage Yard practical-routing layers.</p>
   </div>
 
   <section class="card">
@@ -88,13 +88,14 @@
     <div class="actions"><button class="btn secondary smallbtn" id="clearLocalNotes" type="button">Clear my test notes</button></div>
   </section>
 
-  <section class="card"><h2>What v3.4 is testing</h2><div class="source">
+  <section class="card"><h2>What v3.4.1 is testing</h2><div class="source">
 <p><strong>Home Origin Resolver:</strong> report terminal and home-deadhead origin are independent. Final-movement intelligence can now move the going-home origin away from the report terminal.</p>
 <p><strong>Job 7 weekday proof case:</strong> Job 7 still reports Jamaica Storage Yard, so the trip to work still requires Jamaica 20 minutes before report. Its final working movement is Train 13 to Long Island City at 2:56 PM, so its going-home side now starts at LIC instead of JSY.</p>
 <p><strong>LIC timing:</strong> five minutes from physical availability is paper legal. Under-five-minute departures remain visible as high-confidence practical connections, never protected.</p>
 <p><strong>LIC stop certainty:</strong> S and E stops are guaranteed. Q stops are extremely high-confidence.</p>
 <p><strong>Curated LIC/HPT trains:</strong> 62 E 8:37; 512 Q 8:42; 5214 E 9:54 / Jamaica 10:15; 8 E 11:18; 10 E 11:18; 656 S 3:15 / HPT 3:30; 558 Q 3:42 / HPT 3:57; 658 Q 4:07 / HPT 4:22; 18 Q 4:16 / HPT 4:30; 80 S 4:27 / HPT 4:42; 662 S 4:58 / HPT 5:07; 698 S 5:43 / HPT 5:58; 568 S 6:40 / HPT 6:53.</p>
 <p><strong>Train 8 / 10 calendar:</strong> Train 8 runs Monday–Friday except Fridays 5/28/2026–9/3/2027 and Thursdays 6/17/2027 and 7/1/2027. Train 10 runs on those exception Fridays and those two Thursdays.</p>
+<p><strong>v3.4.1 hotfix:</strong> v3.4.0 could throw an exception when LIC had no under-five-minute practical option. The priority comparison and LIC header updated first, but the old detailed route card remained on screen, which is why a stale Grand Central/Sunday route appeared beneath the correct LIC header. The null practical-route case is now handled safely, and stale detailed results are cleared before recalculation.</p>
 <p><strong>Existing layers remain:</strong> WSY direct-first practical routing, JSY protected routing, Bolands logic, and GTFS browser caching.</p>
 </div></section>
 </div>
@@ -1231,6 +1232,7 @@ function render(){
 
  const rtHome=buildRuntime(date,[0,1]);
  renderPriorityComparison(date,a,rt,rtHome,work,reportDeadline);
+ $('homeResults').innerHTML='<div class="empty">Calculating home route…</div>';
  const egress=terminalHomeRule(a);
  if(egress.paused){$('homeResults').innerHTML=`<div class="empty">Going-home routing from ${escapeHtml(a.operationalTerminal||a.workStation)} is intentionally paused. ${escapeHtml(egress.label)}.</div>`;bindRouteButtons();return}
  const homeStart=findStopIdByName(egress.routeStation);
@@ -1270,7 +1272,11 @@ function render(){
  let homeHtml='';
  const practicalMeta=(()=>{if(!practicalHome)return null;const same=legalHome&&routeSig(practicalHome)===routeSig(legalHome),notes=notesFor(a,date,practicalHome,'home'),verified=notes.some(n=>n.status?.includes('VERIFIED')),show=!same,savings=legalHome?Math.round(legalHome.arrive-practicalHome.arrive):null;return {same,notes,verified,show,savings};})();
  const promoteVerifiedPractical=!!(practicalMeta?.show&&practicalMeta.verified&&(!legalHome||practicalMeta.savings>=30));
- const practicalClass=practicalHome?.wsyIntercept?{key:'tight',label:'POSSIBLE WSY INTERCEPT'}:routeClass(practicalHome,practicalHome&&a.finalArrival!=null?Math.round(practicalHome.depart-a.finalArrival):null,!!(practicalHome&&practicalHome.depart<a.release));
+ const practicalClass=practicalHome
+   ? (practicalHome.wsyIntercept
+      ? {key:'tight',label:'POSSIBLE WSY INTERCEPT'}
+      : routeClass(practicalHome,a.finalArrival!=null?Math.round(practicalHome.depart-a.finalArrival):null,!!(practicalHome.depart<a.release)))
+   : null;
 
  if(egress.practicalMode==='wsy_intercept'&&wsyPracticalSet?.recommended){
    const recommended=wsyPracticalSet.recommended;
