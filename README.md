@@ -1,51 +1,57 @@
-# Engineer Pay Log — Deadhead Finder Sandbox v3.5.0
+# Engineer Pay Log — Deadhead Finder Sandbox v3.6.0
 
-## Physical Finish vs Contractual Release
+## Generalized Physical Finish Resolver
 
-This build formalizes the distinction discovered while testing Job 7.
+v3.5 proved that **physical finish** and **contractual release** have to be separate clocks. v3.6 moves that logic out of one-off Job 7 / Job 166 exceptions and into a data-driven final-movement resolver.
 
-### The model
-An assignment can have:
-- **Contractual home terminal** — where the job is contractually based.
-- **Contractual report** — the Crew Book report time.
-- **Contractual release** — the Crew Book release used for pay.
-- **Physical finish location** — where the engineer actually finishes the final working movement.
-- **Physical finish time** — when that train work actually ends.
-- **Deadhead availability** — physical finish plus the applicable connection/disposal rule.
+### What is now automatic
+The build contains **117 source-matched weekday/weekend final-movement patterns** extracted from the GO 202 Crew Book. A pattern is included only when its Crew Book report/release exactly matches the already-certified schedule data embedded in the sandbox and the service section has one unambiguous release.
 
-A paid home-terminal deadhead/travel allowance can extend the contractual release even though the engineer is not physically required to travel back to the home terminal.
+The resolver currently promotes two conservative patterns:
 
-### Job 7 proof case
-- Contractual home terminal: **Jamaica Storage Yard**
-- Contractual report: **7:43 AM**
-- Final working movement: **Train 13**
-- Physical finish: **Long Island City, 2:56 PM**
-- Paper-legal LIC deadhead availability: **3:01 PM**
-- Contractual Crew Book release: **4:06 PM**
+1. **Normal passenger-station finish** — an unmarked final working train ending at Long Island City, Grand Central, Penn Station, Atlantic Terminal, or Jamaica. It is promoted when either:
+   - contractual release is exactly 5 minutes after final arrival, or
+   - the Crew Book shows a `DH to ...` after the final working movement.
 
-Deadhead Finder routes from LIC at the physical-finish clock. Engineer Pay Log/pay logic retains the contractual release separately.
+   Physical finish = final train arrival. Paper home availability = physical finish + 5 minutes.
 
-### Data-model cleanup
-Movement intelligence now uses explicit fields:
-- `physicalFinishTime`
-- `physicalFinishLocation`
-- `physicalFinishTrain`
-- `contractualReleaseTime`
-- `contractualHomeTerminal`
-- `deadheadPaperMinutes`
-- `deadheadAvailabilityBase`
+2. **Final `w` movement into Penn** — `w` means the train terminates in West Side Yard.
 
-Temporary legacy aliases remain so the existing sandbox router stays stable while the new model is proven.
+   Physical finish = Penn arrival + 15 minutes (5 minutes clear + 10 minutes yarding). Paper home availability at Penn = physical finish + 20 minutes. WSY practical-intercept candidates are now measured from **physical finish**, not automatically from contractual release.
 
-### Scope
-This build does **not** invent final-movement data for assignments we have not certified. Those jobs retain the prior terminal/release behavior until their physical finish is known.
+### Intentionally not auto-resolved yet
+Final `c`, `t`, `v`, and `y` equipment markers remain excluded from the automatic physical-finish layer. Those movements terminate in Penn C Yard, GCM Tail Track, Flatbush Avenue VD Yard, and Jamaica Yard respectively and need their own egress/disposal handling before Deadhead Finder should route from them.
 
-### Retest
-Use **Job 7 — Monday Sep. 21 — Ronkonkoma**.
+Sections with multiple day-specific release variants are also skipped rather than guessed.
 
+### Existing behavior retained
+- Job 7 LIC handling and curated LIC/Hunterspoint originating trains.
+- West Side Yard practical vs protected routing.
+- Jamaica Storage Yard / Bolands practical layer.
+- GTFS browser cache.
+- Relief-crew day resolution.
+- Contractual report/release remain independent from physical finish.
+
+## Targeted tests
+
+### Test 1 — Job 104, Monday
 Expected:
-1. To-work side still uses JSY / Jamaica −20.
-2. Assignment summary explicitly shows **Physical finish: Long Island City · Train 13 · 2:56 PM**.
-3. Assignment summary separately shows **Contractual release: 4:06 PM**.
-4. Going-home detail explains **3:01 PM paper-legal at LIC** and that the 4:06 release is retained for pay rather than as a physical travel requirement.
-5. The route itself should remain the same LIC-based route family that passed in v3.4.1.
+- Final working Train **1591 w** arrives Penn **12:18 AM**.
+- Physical finish resolves to **West Side Yard at 12:33 AM**.
+- Contractual release remains **12:33 AM**.
+- Paper legal at Penn becomes **12:53 AM**.
+- Existing WSY practical route behavior remains intact.
+
+This also exercises **Relief Crew 435 Monday**, because 435 covers Job 104 on Monday.
+
+### Test 2 — Job 89, weekday
+Expected:
+- Final working Train **1235** arrives **Grand Central at 8:50 AM**.
+- Crew Book then shows a deadhead to Penn.
+- Physical finish resolves to **Grand Central at 8:50 AM**.
+- Paper-legal home availability begins **8:55 AM**.
+- Contractual Crew Book release remains **9:50 AM** for pay/contract purposes.
+- Going-home routing starts from Grand Central, not West Side Yard/Penn.
+
+### Regression
+Job 7 Monday should remain LIC **2:56 PM**, paper legal **3:01 PM**, contractual release **4:06 PM**. Job 166 should continue to route correctly, but now through the generalized normal-station rule rather than dedicated hard-coded movement data.
